@@ -1,0 +1,90 @@
+ html, body {
+      height: 100%;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0d6efd, #031633);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== LOGIN CARD ===== */
+    .login-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.25);
+      animation: fadeSlide .6s ease;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-title {
+      font-weight: 700;
+    }
+
+    .form-control {
+      height: 45px;
+      font-size: 14px;
+    }
+
+    .btn-login {
+      height: 45px;
+      font-size: 14px;
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: #adb5bd;
+      margin-top: 15px;
+    }
+
+    /* ===== BACK BUTTON ===== */
+    .btn-back {
+      font-size: 14px;
+      padding: 0;
+      color: #0d6efd;
+      text-decoration: none;
+    }
+
+    .btn-back:hover {
+      text-decoration: underline;
+    }
+
+    /* =====================
+       RESPONSIVE
+    ===================== */
+
+    /* HP */
+    @media (max-width: 576px) {
+      body {
+        padding: 12px;
+        align-items: flex-start;
+      }
+
+      .login-card {
+        max-width: 100%;
+        padding: 20px;
+        margin-top: 30px;
+        border-radius: 10px;
+      }
+
+      .form-control {
+        height: 44px;
+        font-size: 14px;
+      }
+
+      .btn-login {
+        height: 44px;
+      }
+
+      .footer-text {
+        font-size: 10px;
+      }
+    }

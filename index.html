@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistem Perizinan UMKM RT 01 RW 02 Kelurahan Serua</title>
+
+  <!-- Bootstrap LOCAL -->
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Font Awesome LOCAL -->
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+
+  <style>
+    body {
+      background-color: #f4f6f9;
+      overflow-x: hidden;
+    }
+
+    /* FLOATING BACKGROUND */
+    .bg-shape {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      animation: float 12s infinite ease-in-out;
+    }
+    .shape1 { width:200px;height:200px;top:10%;left:5%; }
+    .shape2 { width:150px;height:150px;bottom:20%;right:10%;animation-delay:3s; }
+    .shape3 { width:100px;height:100px;top:50%;right:30%;animation-delay:6s; }
+
+    @keyframes float {
+      0%{transform:translateY(0)}
+      50%{transform:translateY(-40px)}
+      100%{transform:translateY(0)}
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(135deg,#0d6efd,#031633);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-title {
+      font-size:3.2rem;
+      font-weight:800;
+      animation:slideDown 1s ease forwards;
+    }
+
+    .hero-sub {
+      font-size:1.15rem;
+      opacity:0;
+      animation:fadeIn 1s ease forwards;
+      animation-delay:.5s;
+    }
+
+    .hero-btn {
+      opacity:0;
+      animation:fadeIn 1s ease forwards;
+      animation-delay:1s;
+    }
+
+    @keyframes slideDown {
+      from{transform:translateY(-30px);opacity:0}
+      to{transform:translateY(0);opacity:1}
+    }
+
+    @keyframes fadeIn {
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    /* CARD */
+    .glass-card {
+      background:rgba(255,255,255,.85);
+      backdrop-filter:blur(10px);
+      border-radius:18px;
+      padding:35px;
+      box-shadow:0 20px 60px rgba(0,0,0,.15);
+      transition:.4s ease;
+    }
+
+    .glass-card:hover {
+      transform:translateY(-10px);
+      box-shadow:0 30px 80px rgba(0,0,0,.25);
+    }
+
+    .service-icon i {
+      font-size:46px;
+      color:#0d6efd;
+      margin-bottom:15px;
+    }
+
+    /* STEP */
+    .step {
+      position:relative;
+      padding-left:45px;
+      margin-bottom:28px;
+    }
+
+    .step::before {
+      content:"";
+      position:absolute;
+      left:15px;
+      top:6px;
+      width:10px;
+      height:10px;
+      background:#0d6efd;
+      border-radius:50%;
+    }
+
+    .step::after {
+      content:"";
+      position:absolute;
+      left:19px;
+      top:20px;
+      width:2px;
+      height:100%;
+      background:#ced4da;
+    }
+
+    /* REQUIREMENT */
+    .requirement-card {
+      background:#fff;
+      padding:30px;
+      border-radius:14px;
+      box-shadow:0 15px 40px rgba(0,0,0,.08);
+      border-left:6px solid #0d6efd;
+    }
+
+    .req-icon {
+      width:48px;height:48px;
+      background:#0d6efd;
+      color:#fff;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+    }
+
+    .req-item {
+      background:#f8f9fa;
+      border-radius:10px;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:14px;
+      transition:.25s;
+    }
+
+    .req-item i {
+      color:#0d6efd;
+      min-width:18px;
+    }
+
+    .req-item:hover {
+      background:#eef4ff;
+      transform:translateY(-2px);
+    }
+
+    footer {
+      background:#031633;
+      color:#bfc7d5;
+    }
+
+    .reveal {
+      opacity:0;
+      transform:translateY(60px);
+      transition:.9s ease;
+    }
+
+    .reveal.active {
+      opacity:1;
+      transform:translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="bg-shape shape1"></div>
+  <div class="bg-shape shape2"></div>
+  <div class="bg-shape shape3"></div>
+
+  <div class="container position-relative">
+    <div class="row align-items-center">
+      <div class="col-md-7">
+        <h1 class="hero-title">
+          Sistem Perizinan UMKM <br>
+          RT 01 RW 02 
+        </h1>
+        <p class="hero-sub mt-3">
+          Platform layanan publik berbasis web untuk mendukung transparansi
+          proses perizinan UMKM di <strong>RT 01 RW 02 Kelurahan Serua,
+          Kecamatan Ciputat</strong>.
+        </p>
+
+        <div class="hero-btn mt-4">
+          <a href="login.php" class="btn btn-light btn-lg me-2">
+            <i class="fas fa-user"></i> Login
+          </a>
+          <a href="blockchain-list.php" class="btn btn-outline-light btn-lg">
+            <i class="fas fa-search"></i> Lihat Status UMKM
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-5 text-center d-none d-md-block reveal">
+        <img src="assets/img/umkm.png" class="img-fluid" alt="UMKM">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LAYANAN -->
+<section class="py-5">
+  <div class="container">
+    <div class="row text-center mb-5 reveal">
+      <h2 class="fw-bold">Layanan Utama</h2>
+      <p class="text-muted">
+        Pelayanan perizinan UMKM berbasis digital di tingkat RT 01 RW 02
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4 reveal">
+        <div class="glass-card text-center">
+          <div class="service-icon"><i class="fas fa-file-alt"></i></div>
+          <h5>Pengajuan UMKM</h5>
+          <p>Pengajuan UMKM dilakukan secara online oleh warga.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 reveal">
+        <div class="glass-card text-center">
+          <div class="service-icon"><i class="fas fa-user-check"></i></div>
+          <h5>Verifikasi RT/RW</h5>
+          <p>Pengurus RT/RW memverifikasi data dan dokumen UMKM.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 reveal">
+        <div class="glass-card text-center">
+          <div class="service-icon"><i class="fas fa-file-signature"></i></div>
+          <h5>Surat Pengantar</h5>
+          <p>Surat pengantar UMKM diterbitkan dan dapat diunduh.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PERSYARATAN & FLOW -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <h3 class="fw-bold text-center mb-5 reveal">
+      Persyaratan & Alur Perizinan UMKM
+    </h3>
+
+    <div class="row g-4">
+
+      <!-- PERSYARATAN -->
+      <div class="col-lg-6 reveal">
+        <div class="requirement-card h-100">
+
+          <div class="alert alert-primary d-flex align-items-center mb-4">
+            <i class="fas fa-user-plus me-2"></i>
+            <div>
+              Warga <strong>wajib memiliki akun</strong> untuk mengajukan UMKM.
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center mb-3">
+            <div class="req-icon me-3">
+              <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0">Persyaratan Administrasi</h5>
+              <small class="text-muted">Dokumen yang harus disiapkan</small>
+            </div>
+          </div>
+
+          <div class="req-item"><i class="fas fa-id-card"></i> Foto Akta Kelahiran</div>
+          <div class="req-item"><i class="fas fa-users"></i> Foto KTP</div>
+          <div class="req-item"><i class="fas fa-camera"></i> Foto KK</div>
+          <div class="req-item"><i class="fas fa-file-alt"></i> Foto Surat Halal/Sertifikat Halal</div>
+          <div class="req-item"><i class="fas fa-edit"></i> Foto Menu Jualan</div>
+          <div class="req-item"><i class="fas fa-map-marker-alt"></i> Foto Tempat dan Pemiliknya</div>
+          <div class="req-item"><i class="fas fa-user"></i> Foto Kepemilikian Usaha</div>
+
+        </div>
+      </div>
+
+      <!-- FLOW -->
+      <div class="col-lg-6 reveal">
+        <div class="requirement-card h-100">
+
+          <div class="d-flex align-items-center mb-4">
+            <div class="req-icon me-3">
+              <i class="fas fa-route"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0">Alur Perizinan UMKM</h5>
+              <small class="text-muted">Tahapan proses</small>
+            </div>
+          </div>
+
+          <div class="step"><h6>Daftar Akun</h6><p>Pendaftaran akun warga.</p></div>
+          <div class="step"><h6>Login</h6><p>Masuk ke sistem.</p></div>
+          <div class="step"><h6>Pengajuan UMKM</h6><p>Mengisi data dan upload dokumen.</p></div>
+          <div class="step"><h6>Verifikasi RT/RW</h6><p>Pemeriksaan data oleh RT/RW.</p></div>
+          <div class="step"><h6>Pantau Status</h6><p>Status dapat dipantau secara online.</p></div>
+          <div class="step"><h6>Surat Pengantar</h6><p>Surat diterbitkan dan diunduh.</p></div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-4">
+  <div class="container text-center">
+    <small>
+      © 2026 Sistem Perizinan UMKM <br>
+      RT 01 RW 02 Kelurahan Serua – Kecamatan Ciputat
+    </small>
+  </div>
+</footer>
+
+<script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('active');
+    });
+  }, { threshold: 0.15 });
+
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

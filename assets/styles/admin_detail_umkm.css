@@ -1,0 +1,61 @@
+/* ===== CARD STYLE ===== */
+.card-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  border: 1px solid #f1f1f1;
+}
+
+.card-box h5 {
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* ===== INFO GRID ===== */
+.info-label {
+  font-size: 13px;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+.info-value {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* ===== STATUS BADGE ===== */
+.badge {
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+/* ===== DOKUMEN CARD ===== */
+.doc-card {
+  transition: all .25s ease;
+}
+.doc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,.1);
+}
+
+/* ===== BLOCKCHAIN TIMELINE ===== */
+.timeline li {
+  border-left: 4px solid #0d6efd;
+  padding-left: 14px;
+  margin-bottom: 14px;
+}
+.timeline code {
+  font-size: 12px;
+  color: #0d6efd;
+  word-break: break-all;
+}
+
+/* ===== ACTION BUTTON ===== */
+.action-box {
+  background: linear-gradient(135deg, #198754, #20c997);
+  color: #fff;
+}
+.action-box .btn {
+  font-weight: 600;
+}

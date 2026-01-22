@@ -1,0 +1,198 @@
+:root{
+  --primary:#2563eb;
+  --primary-soft:#e0e7ff;
+  --dark:#0f172a;
+  --bg:#f4f6fb;
+  --card:#ffffff;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:system-ui,sans-serif;
+}
+
+/* ================= LAYOUT ================= */
+.wrapper{
+  display:flex;
+  min-height:100vh;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar{
+  width:240px;
+  background:linear-gradient(180deg,#0f172a,#111827);
+  color:#fff;
+  padding:22px 16px;
+  transition:.3s ease;
+}
+
+.sidebar h5{
+  font-weight:700;
+  margin-bottom:28px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.sidebar a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:10px;
+  color:#c7d2fe;
+  text-decoration:none;
+  margin-bottom:6px;
+  transition:.25s;
+}
+
+.sidebar a i{
+  width:20px;
+  text-align:center;
+}
+
+.sidebar a.active,
+.sidebar a:hover{
+  background:rgba(37,99,235,.18);
+  color:#fff;
+}
+
+/* ================= CONTENT ================= */
+.content{
+  flex:1;
+  padding:26px;
+}
+
+/* ================= TOPBAR ================= */
+.topbar{
+  background:var(--card);
+  padding:14px 18px;
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.08);
+  margin-bottom:22px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.hamburger{
+  background:var(--primary-soft);
+  border:none;
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  font-size:18px;
+  color:var(--primary);
+  display:none;
+}
+
+/* ================= CARD ================= */
+.card-box{
+  background:var(--card);
+  border-radius:18px;
+  padding:22px;
+  box-shadow:0 10px 28px rgba(0,0,0,.08);
+  transition:.25s;
+}
+
+.card-box:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(0,0,0,.12);
+}
+
+.card-icon{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#2563eb,#3b82f6);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  margin-bottom:10px;
+}
+
+/* ================= STATUS ================= */
+.badge-status{
+  background:linear-gradient(135deg,#facc15,#fb923c);
+  padding:8px 16px;
+  border-radius:999px;
+  font-weight:600;
+}
+
+/* ================= OVERLAY ================= */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:999;
+  display:none;
+}
+/* ===== STAT CARD ===== */
+.stat-card{
+  background:#fff;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.stat-icon{
+  width:46px;
+  height:46px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:18px;
+  margin-bottom:10px;
+}
+
+/* ===== CARD FORM ===== */
+.card-form{
+  background:#fff;
+  border-radius:18px;
+  padding:26px;
+  box-shadow:0 12px 30px rgba(0,0,0,.08);
+}
+
+.form-label{
+  font-weight:600;
+}
+
+.badge-info{
+  background:#e0e7ff;
+  color:#2563eb;
+}
+/* ================= MOBILE ================= */
+@media(max-width:768px)
+{
+
+  .hamburger{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .sidebar{
+    position:fixed;
+    top:0;
+    left:-240px;
+    height:100vh;
+    z-index:1000;
+  }
+
+  .sidebar.show{
+    left:0;
+  }
+
+  .overlay.show{
+    display:block;
+  }
+
+  .content{
+    padding:16px;
+  }
+}
