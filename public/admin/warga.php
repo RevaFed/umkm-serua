@@ -1,12 +1,6 @@
 <?php
-session_start();
+require "auth.php";
 require_once "../../config/database.php";
-
-/* AUTH ADMIN */
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../login.php");
-    exit;
-}
 
 /* DATA WARGA + JUMLAH UMKM */
 $q = mysqli_query($conn, "
@@ -18,8 +12,14 @@ $q = mysqli_query($conn, "
     w.email,
     COUNT(u.id_umkm) AS total_umkm
   FROM tbl_warga w
-  LEFT JOIN tbl_umkm u ON w.id_warga = u.id_warga
-  GROUP BY w.id_warga
+  LEFT JOIN tbl_umkm u 
+    ON w.id_warga = u.id_warga
+  GROUP BY 
+    w.id_warga,
+    w.nama_lengkap,
+    w.nik,
+    w.no_hp,
+    w.email
   ORDER BY w.created_at DESC
 ");
 ?>
@@ -27,7 +27,7 @@ $q = mysqli_query($conn, "
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Data Warga</title>
+<title>Data Warga | Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
@@ -37,15 +37,17 @@ $q = mysqli_query($conn, "
 </head>
 
 <body>
- <div class="overlay" id="overlay"></div>
 <div class="wrapper">
+
 <?php include "sidebar.php"; ?>
 
 <main class="content">
 <?php include "topbar.php"; ?>
 
 <div class="card-box">
-  <h5 class="mb-3"><i class="fas fa-users"></i> Data Warga</h5>
+  <h5 class="mb-3">
+    <i class="fas fa-users"></i> Data Warga
+  </h5>
 
   <div class="table-responsive">
     <table id="tableWarga" class="table table-striped table-hover align-middle">
@@ -69,7 +71,9 @@ $q = mysqli_query($conn, "
           <td><?= htmlspecialchars($w['no_hp']) ?></td>
           <td><?= htmlspecialchars($w['email']) ?></td>
           <td>
-            <span class="badge bg-primary"><?= $w['total_umkm'] ?></span>
+            <span class="badge bg-primary">
+              <?= $w['total_umkm'] ?>
+            </span>
           </td>
           <td>
             <a href="detail_warga.php?id=<?= $w['id_warga'] ?>"
@@ -86,7 +90,11 @@ $q = mysqli_query($conn, "
 
 </main>
 </div>
-<?php include "footer.php"?>
+
+<?php include "footer.php"; ?>
+
+<script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/plugins/datatables/datatables.min.js"></script>
 
 <script>
 $(document).ready(function () {

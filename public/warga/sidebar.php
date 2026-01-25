@@ -18,6 +18,8 @@
     <i class="fas fa-history"></i> Riwayat
   </a>
 
+  <hr>
+
   <a href="../../controlls/logout.php">
     <i class="fas fa-sign-out-alt"></i> Logout
   </a>

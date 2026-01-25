@@ -86,15 +86,27 @@ unset($_SESSION['alert']);
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Password</label>
-      <input
-        type="password"
-        name="password"
-        class="form-control"
-        placeholder="Masukkan password"
-        required
-      >
-    </div>
+  <label class="form-label">Password</label>
+  <div class="input-group">
+    <input
+      type="password"
+      name="password"
+      id="password"
+      class="form-control"
+      placeholder="Masukkan password"
+      required
+    >
+    <button
+      class="btn btn-outline-secondary"
+      type="button"
+      id="togglePassword"
+      tabindex="-1"
+    >
+      <i class="fas fa-eye"></i>
+    </button>
+  </div>
+</div>
+
 
     <div class="d-grid mt-4">
       <button type="submit" class="btn btn-primary btn-login">
@@ -120,5 +132,22 @@ unset($_SESSION['alert']);
 </div>
 
 <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
+  const icon = togglePassword.querySelector('i');
+
+  togglePassword.addEventListener('click', function () {
+    const type = passwordInput.getAttribute('type') === 'password'
+      ? 'text'
+      : 'password';
+
+    passwordInput.setAttribute('type', type);
+
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+  });
+</script>
+
 </body>
 </html>

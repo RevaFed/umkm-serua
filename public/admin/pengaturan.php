@@ -1,18 +1,23 @@
 <?php
-session_start();
+require "auth.php";
 require_once "../../config/database.php";
 
-/* AUTH ADMIN */
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../login.php");
+/* AMBIL DATA ADMIN LOGIN */
+$id_admin = $_SESSION['id_admin'];
+
+$stmt = $conn->prepare("
+  SELECT nama, username, jabatan, no_hp
+  FROM tbl_admin
+  WHERE id_admin = ?
+");
+$stmt->bind_param("i", $id_admin);
+$stmt->execute();
+$admin = $stmt->get_result()->fetch_assoc();
+
+if (!$admin) {
+    header("Location: dashboard.php");
     exit;
 }
-
-$id_admin = $_SESSION['id'];
-
-/* AMBIL DATA ADMIN */
-$q = mysqli_query($conn, "SELECT * FROM tbl_admin WHERE id_admin='$id_admin'");
-$admin = mysqli_fetch_assoc($q);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -26,7 +31,6 @@ $admin = mysqli_fetch_assoc($q);
 <link rel="stylesheet" href="../../assets/styles/admin-styles.css">
 </head>
 <body>
-   <div class="overlay" id="overlay"></div>
 
 <div class="wrapper">
 <?php include "sidebar.php"; ?>
@@ -34,7 +38,9 @@ $admin = mysqli_fetch_assoc($q);
 <main class="content">
 <?php include "topbar.php"; ?>
 
-<h5 class="mb-3"><i class="fas fa-cog"></i> Pengaturan Admin</h5>
+<h5 class="mb-3">
+  <i class="fas fa-cog"></i> Pengaturan Admin
+</h5>
 
 <!-- ALERT -->
 <?php if (isset($_SESSION['alert'])): ?>
@@ -75,7 +81,7 @@ $admin = mysqli_fetch_assoc($q);
 <!-- ================= PROFIL ================= -->
 <div class="tab-pane fade show active" id="profil">
 <div class="card-box">
-<form action="proses_pengaturan.php" method="POST">
+<form action="../../controlls/proses_pengaturan.php" method="POST">
 <input type="hidden" name="aksi" value="profil">
 
 <div class="mb-3">
@@ -142,6 +148,6 @@ $admin = mysqli_fetch_assoc($q);
 </div>
 
 <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-<?php include "footer.php"?>
+<?php include "footer.php"; ?>
 </body>
 </html>

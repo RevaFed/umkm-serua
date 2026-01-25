@@ -1,58 +1,80 @@
 <?php
-session_start();
+require "auth.php";
 require_once "../../config/database.php";
 
-/* ANTI CACHE */
+/* ===============================
+   ANTI CACHE
+=============================== */
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-/* AUTH WARGA */
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'warga') {
-    header("Location: ../login.php");
-    exit;
-}
-
+/* ===============================
+   AUTH WARGA
+=============================== */
 $id_warga = $_SESSION['id_warga'];
 
-/* VALIDASI ID */
-if (!isset($_GET['id'])) {
+/* ===============================
+   VALIDASI ID
+=============================== */
+$id_umkm = (int)($_GET['id'] ?? 0);
+if ($id_umkm === 0) {
     header("Location: status_umkm.php");
     exit;
 }
 
-$id_umkm = (int) $_GET['id'];
-
-/* AMBIL DATA UMKM (PASTI MILIK WARGA) */
-$qUmkm = mysqli_query($conn, "
-  SELECT u.*, l.nomor_surat, l.file_surat, l.tanggal_terbit, l.blockchain_tx
-  FROM tbl_umkm u
-  LEFT JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
-  WHERE u.id_umkm = '$id_umkm' AND u.id_warga = '$id_warga'
+/* ===============================
+   DATA UMKM (MILIK WARGA)
+=============================== */
+$stmt = $conn->prepare("
+  SELECT *
+  FROM tbl_umkm
+  WHERE id_umkm = ? AND id_warga = ?
 ");
+$stmt->bind_param("ii", $id_umkm, $id_warga);
+$stmt->execute();
+$umkm = $stmt->get_result()->fetch_assoc();
 
-if (mysqli_num_rows($qUmkm) === 0) {
+if (!$umkm) {
     header("Location: status_umkm.php");
     exit;
 }
 
-$umkm = mysqli_fetch_assoc($qUmkm);
-
-/* DOKUMEN */
-$qDok = mysqli_query($conn, "
+/* ===============================
+   DOKUMEN UMKM
+=============================== */
+$stmt = $conn->prepare("
   SELECT jenis_dokumen, file_path, created_at
   FROM tbl_dokumen_umkm
-  WHERE id_umkm = '$id_umkm'
+  WHERE id_umkm = ?
   ORDER BY created_at ASC
 ");
+$stmt->bind_param("i", $id_umkm);
+$stmt->execute();
+$qDok = $stmt->get_result();
 
-/* BLOCKCHAIN TIMELINE */
-$qBC = mysqli_query($conn, "
+/* ===============================
+   BLOCKCHAIN TIMELINE
+=============================== */
+$stmt = $conn->prepare("
   SELECT tipe_transaksi, hash_tx, tanggal_tx
   FROM tbl_transaksi_blockchain
-  WHERE id_umkm = '$id_umkm'
+  WHERE id_umkm = ?
   ORDER BY tanggal_tx ASC
 ");
+$stmt->bind_param("i", $id_umkm);
+$stmt->execute();
+$qBC = $stmt->get_result();
+
+/* ===============================
+   MAP LABEL BLOCKCHAIN
+=============================== */
+$bcLabel = [
+  'pengajuan'              => 'Pengajuan UMKM',
+  'verifikasi_rt'          => 'Verifikasi RT',
+  'verifikasi_rw'          => 'Verifikasi RW',
+  'surat_pengantar_terbit' => 'Surat Pengantar Terbit'
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -73,9 +95,53 @@ $qBC = mysqli_query($conn, "
 <main class="content">
 <?php include "topbar.php"; ?>
 
+<!-- ================= STATUS ================= -->
+<div class="card-box mb-3">
+  <h6>Status Pengajuan</h6>
+<?php
+switch ($umkm['status']) {
+  case 'menunggu_rt':
+    echo '<span class="badge bg-warning text-dark">Menunggu Verifikasi RT</span>';
+    break;
+  case 'menunggu_rw':
+    echo '<span class="badge bg-info text-dark">Menunggu Verifikasi RW</span>';
+    break;
+  case 'ditolak_rt':
+    echo '<span class="badge bg-danger">Ditolak RT</span>';
+    break;
+  case 'ditolak_rw':
+    echo '<span class="badge bg-danger">Ditolak RW</span>';
+    break;
+  case 'disetujui':
+    echo '<span class="badge bg-success">Disetujui</span>';
+    break;
+}
+?>
+</div>
+
+<!-- ================= CATATAN PENOLAKAN ================= -->
+<?php if (in_array($umkm['status'], ['ditolak_rt','ditolak_rw'])): ?>
+<div class="card-box mb-3 border border-danger">
+  <h6 class="text-danger">
+    <i class="fas fa-exclamation-circle"></i> Pengajuan Ditolak
+  </h6>
+
+  <p class="mb-2">
+    <strong>Alasan Penolakan:</strong><br>
+    <?= htmlspecialchars($umkm['catatan_penolakan']) ?>
+  </p>
+
+  <a href="../../controlls/edit_umkm.php?id=<?= $id_umkm ?>"
+     class="btn btn-warning">
+    <i class="fas fa-edit"></i> Perbaiki & Ajukan Ulang
+  </a>
+</div>
+<?php endif; ?>
+
+
 <!-- ================= DATA UMKM ================= -->
 <div class="card-box mb-3">
-  <h5 class="mb-3"><i class="fas fa-store"></i> Detail UMKM</h5>
+  <h5><i class="fas fa-store"></i> Data UMKM</h5>
 
   <div class="row g-3">
     <div class="col-md-6">
@@ -99,89 +165,90 @@ $qBC = mysqli_query($conn, "
       <?= date('d-m-Y', strtotime($umkm['created_at'])) ?>
     </div>
   </div>
-
-  <hr>
-
-  <strong>Status</strong><br>
-  <?php if ($umkm['nomor_surat']): ?>
-    <span class="badge bg-success">Disetujui</span>
-    <div class="mt-2">
-      <strong>Nomor Surat:</strong> <?= htmlspecialchars($umkm['nomor_surat']) ?><br>
-      <strong>Tanggal Terbit:</strong> <?= date('d-m-Y', strtotime($umkm['tanggal_terbit'])) ?><br>
-      <a href="../../uploads/surat/<?= $umkm['file_surat'] ?>" target="_blank" class="btn btn-sm btn-success mt-2">
-        <i class="fas fa-file-pdf"></i> Lihat Surat
-      </a>
-    </div>
-  <?php else: ?>
-    <span class="badge bg-warning text-dark">Menunggu Verifikasi</span>
-  <?php endif; ?>
 </div>
+
+<!-- ================= SURAT ================= -->
+<?php if ($umkm['status'] === 'disetujui'): ?>
+<div class="card-box mb-3">
+  <h6><i class="fas fa-file-pdf"></i> Surat Pengantar</h6>
+  <a href="../../uploads/surat/surat_umkm_<?= $umkm['id_umkm'] ?>.pdf"
+     target="_blank"
+     class="btn btn-success btn-sm">
+    <i class="fas fa-eye"></i> Lihat Surat
+  </a>
+</div>
+<?php endif; ?>
 
 <!-- ================= DOKUMEN ================= -->
 <div class="card-box mb-3">
-  <h6><i class="fas fa-folder-open"></i> Dokumen</h6>
+  <h6><i class="fas fa-folder-open"></i> Dokumen UMKM</h6>
 
-<div class="row g-3">
-<?php if (mysqli_num_rows($qDok) > 0): ?>
-  <?php while ($d = mysqli_fetch_assoc($qDok)): 
-    $ext = strtolower(pathinfo($d['file_path'], PATHINFO_EXTENSION));
-    $fileUrl = "../../uploads/dokumen_umkm/" . $d['file_path'];
-  ?>
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body text-center">
-          <strong><?= htmlspecialchars($d['jenis_dokumen']) ?></strong>
-          <div class="mt-2">
+  <div class="row g-3">
+<?php if ($qDok->num_rows > 0): while ($d = $qDok->fetch_assoc()):
+  $ext = strtolower(pathinfo($d['file_path'], PATHINFO_EXTENSION));
+  $url = "../../uploads/dokumen_umkm/" . $d['file_path'];
+?>
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body text-center">
+        <strong><?= htmlspecialchars($d['jenis_dokumen']) ?></strong>
 
-            <?php if (in_array($ext, ['jpg','jpeg','png'])): ?>
-              <img src="<?= $fileUrl ?>" class="img-fluid rounded mb-2"
-                   style="max-height:180px; object-fit:cover;">
-            <?php else: ?>
-              <i class="fas fa-file-pdf fa-4x text-danger mb-2"></i>
-            <?php endif; ?>
-
-          </div>
-
-          <small class="text-muted d-block mb-2">
-            <?= date('d-m-Y', strtotime($d['created_at'])) ?>
-          </small>
-
-          <a href="<?= $fileUrl ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-            <i class="fas fa-eye"></i> Lihat
-          </a>
+        <div class="mt-2">
+<?php if (in_array($ext, ['jpg','jpeg','png','webp'])): ?>
+          <img src="<?= $url ?>" class="img-fluid rounded"
+               style="max-height:180px;object-fit:cover;">
+<?php else: ?>
+          <i class="fas fa-file-pdf fa-4x text-danger"></i>
+<?php endif; ?>
         </div>
+
+        <small class="text-muted d-block mt-2">
+          <?= date('d-m-Y', strtotime($d['created_at'])) ?>
+        </small>
+
+        <a href="<?= $url ?>" target="_blank"
+           class="btn btn-sm btn-outline-primary mt-2">
+          <i class="fas fa-eye"></i> Lihat
+        </a>
       </div>
     </div>
-  <?php endwhile; ?>
-<?php else: ?>
+  </div>
+<?php endwhile; else: ?>
   <div class="text-muted">Tidak ada dokumen.</div>
 <?php endif; ?>
+  </div>
 </div>
 
-<!-- ================= BLOCKCHAIN TIMELINE ================= -->
+<!-- ================= BLOCKCHAIN ================= -->
 <div class="card-box">
   <h6><i class="fas fa-link"></i> Timeline Blockchain</h6>
 
-  <?php if (mysqli_num_rows($qBC) > 0): ?>
-    <ul class="list-group">
-      <?php while ($bc = mysqli_fetch_assoc($qBC)): ?>
-        <li class="list-group-item">
-          <strong><?= strtoupper(str_replace('_',' ', $bc['tipe_transaksi'])) ?></strong><br>
-          <small class="text-muted"><?= date('d-m-Y H:i', strtotime($bc['tanggal_tx'])) ?></small>
-          <div class="mt-1 text-break">
-            <code><?= $bc['hash_tx'] ?></code>
-          </div>
-        </li>
-      <?php endwhile; ?>
-    </ul>
-  <?php else: ?>
-    <div class="text-muted">Belum ada transaksi blockchain.</div>
-  <?php endif; ?>
+<?php if ($qBC->num_rows > 0): ?>
+  <ul class="list-group">
+<?php while ($bc = $qBC->fetch_assoc()): ?>
+    <li class="list-group-item">
+      <strong><?= $bcLabel[$bc['tipe_transaksi']] ?? $bc['tipe_transaksi'] ?></strong><br>
+      <small class="text-muted">
+        <?= date('d-m-Y H:i', strtotime($bc['tanggal_tx'])) ?>
+      </small>
+      <div class="mt-1 text-break">
+        <code><?= htmlspecialchars($bc['hash_tx']) ?></code>
+      </div>
+    </li>
+<?php endwhile; ?>
+  </ul>
+<?php else: ?>
+  <div class="text-muted">Belum ada transaksi blockchain.</div>
+<?php endif; ?>
 </div>
+
+<a href="status_umkm.php" class="btn btn-secondary mt-3">
+  <i class="fas fa-arrow-left"></i> Kembali
+</a>
 
 </main>
 </div>
 
-<script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+<?php include "footer.php";?>
 </body>
 </html>

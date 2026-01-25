@@ -1,54 +1,89 @@
 <?php
 require_once "config/database.php";
 
-/* VALIDASI ID */
-if (!isset($_GET['id'])) {
-  header("Location: blockchain-list.php");
-  exit;
+/* ===============================
+   VALIDASI ID
+================================ */
+$id_umkm = (int)($_GET['id'] ?? 0);
+if ($id_umkm === 0) {
+    header("Location: blockchain-list.php");
+    exit;
 }
 
-$id_umkm = (int) $_GET['id'];
-
-/* DATA UMKM + WARGA */
-$qInfo = mysqli_query($conn, "
-  SELECT u.nama_usaha, w.nama_lengkap
+/* ===============================
+   INFO UMKM + PEMILIK
+================================ */
+$stmt = $conn->prepare("
+  SELECT 
+    u.nama_usaha,
+    w.nama_lengkap
   FROM tbl_umkm u
   JOIN tbl_warga w ON u.id_warga = w.id_warga
-  WHERE u.id_umkm = '$id_umkm'
+  WHERE u.id_umkm = ?
 ");
-$info = mysqli_fetch_assoc($qInfo);
+$stmt->bind_param("i", $id_umkm);
+$stmt->execute();
+$info = $stmt->get_result()->fetch_assoc();
 
-/* DATA BLOCKCHAIN (TIMELINE) */
-$qBC = mysqli_query($conn, "
+if (!$info) {
+    header("Location: blockchain-list.php");
+    exit;
+}
+
+/* ===============================
+   DATA BLOCKCHAIN (TIMELINE)
+================================ */
+$stmt = $conn->prepare("
   SELECT tipe_transaksi, hash_tx, tanggal_tx
   FROM tbl_transaksi_blockchain
-  WHERE id_umkm = '$id_umkm'
+  WHERE id_umkm = ?
   ORDER BY tanggal_tx ASC
 ");
+$stmt->bind_param("i", $id_umkm);
+$stmt->execute();
+$qBC = $stmt->get_result();
 
-/* STATUS AKHIR */
-$status_akhir = 'Pengajuan';
-if (mysqli_num_rows($qBC) > 0) {
-  $last = mysqli_fetch_assoc(
-    mysqli_query($conn,"
-      SELECT tipe_transaksi 
-      FROM tbl_transaksi_blockchain 
-      WHERE id_umkm='$id_umkm'
-      ORDER BY tanggal_tx DESC LIMIT 1
-    ")
-  );
-  if ($last['tipe_transaksi'] === 'surat_pengantar_terbit') {
-    $status_akhir = 'Legalitas Terbit';
-  } elseif ($last['tipe_transaksi'] === 'verifikasi_rt_rw') {
-    $status_akhir = 'Verifikasi RT/RW';
-  }
-}
+/* ===============================
+   MAPPING TRANSAKSI
+================================ */
+$map = [
+  'pengajuan' => [
+    'icon' => 'file-alt',
+    'bg'   => 'bg-secondary',
+    'label'=> 'Pengajuan UMKM',
+    'desc' => 'UMKM diajukan oleh warga melalui sistem.'
+  ],
+  'verifikasi_rt' => [
+    'icon' => 'user-check',
+    'bg'   => 'bg-info',
+    'label'=> 'Verifikasi RT',
+    'desc' => 'UMKM diverifikasi oleh Ketua RT.'
+  ],
+  'verifikasi_rw' => [
+    'icon' => 'users-cog',
+    'bg'   => 'bg-warning',
+    'label'=> 'Verifikasi RW',
+    'desc' => 'UMKM diverifikasi oleh Ketua RW.'
+  ],
+  'surat_pengantar_terbit' => [
+    'icon' => 'file-signature',
+    'bg'   => 'bg-success',
+    'label'=> 'Legalitas Terbit',
+    'desc' => 'Surat legalitas UMKM resmi diterbitkan.'
+  ],
+    'pengajuan_ulang' => [
+    'icon'  => 'redo',
+    'bg'    => 'bg-secondary',
+    'label' => 'Pengajuan Ulang',
+    'desc'  => 'UMKM diajukan kembali setelah perbaikan dokumen.'
+  ],
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Transaksi Blockchain | Kelurahan Serua</title>
+<title>Detail Blockchain UMKM</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
@@ -56,36 +91,65 @@ if (mysqli_num_rows($qBC) > 0) {
 
 <style>
 html,body{height:100%}
-body{background:#f4f6f9;display:flex;flex-direction:column}
-.main-content{flex:1;animation:fadeIn .6s ease}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+body{
+  background:#f4f6f9;
+  display:flex;
+  flex-direction:column
+}
+.main-content{
+  flex:1;
+  animation:fadeUp .6s ease
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
 
-.timeline{position:relative;padding-left:40px;margin-top:40px}
+/* TIMELINE */
+.timeline{
+  position:relative;
+  padding-left:45px;
+  margin-top:40px
+}
 .timeline::before{
-  content:"";position:absolute;left:18px;top:0;width:4px;height:100%;
-  background:#0d6efd;border-radius:10px
+  content:"";
+  position:absolute;
+  left:18px;
+  top:0;
+  width:4px;
+  height:100%;
+  background:#0d6efd;
+  border-radius:10px
 }
 .timeline-step{
-  position:relative;margin-bottom:40px;opacity:0;
-  transform:translateY(30px);animation:stepFade .6s ease forwards
+  position:relative;
+  margin-bottom:40px
 }
-.timeline-step:nth-child(1){animation-delay:.2s}
-.timeline-step:nth-child(2){animation-delay:.4s}
-.timeline-step:nth-child(3){animation-delay:.6s}
-@keyframes stepFade{to{opacity:1;transform:translateY(0)}}
-
 .timeline-icon{
-  position:absolute;left:-2px;top:0;width:40px;height:40px;
-  background:#0d6efd;color:#fff;border-radius:50%;
-  display:flex;align-items:center;justify-content:center
+  position:absolute;
+  left:-2px;
+  top:0;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center
 }
 .timeline-content{
-  background:#fff;padding:20px 25px;border-radius:12px;
+  background:#fff;
+  padding:20px 25px;
+  border-radius:12px;
   box-shadow:0 10px 30px rgba(0,0,0,.08)
 }
 .hash-box{
-  font-family:monospace;font-size:12px;background:#f1f3f5;
-  padding:10px;border-radius:6px;word-break:break-all
+  font-family:monospace;
+  font-size:12px;
+  background:#f1f3f5;
+  padding:10px;
+  border-radius:6px;
+  word-break:break-all
 }
 footer{background:#031633;color:#bfc7d5}
 </style>
@@ -96,75 +160,76 @@ footer{background:#031633;color:#bfc7d5}
 <!-- HEADER -->
 <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
   <div class="container">
-    <span class="navbar-brand">
-      <i class="fas fa-link"></i> Transaksi Blockchain UMKM
+    <span class="navbar-brand fw-semibold">
+      <i class="fas fa-link"></i> Detail Blockchain UMKM
     </span>
   </div>
 </nav>
 
+<!-- CONTENT -->
 <div class="container main-content">
 
-  <h4 class="fw-bold">Riwayat Transaksi Blockchain</h4>
+  <h4 class="fw-bold">Riwayat Blockchain UMKM</h4>
   <p class="text-muted">
-    Alur proses perizinan UMKM yang dicatat dalam blockchain.
+    Halaman ini menampilkan jejak proses legal UMKM
+    yang tercatat permanen dalam sistem blockchain.
   </p>
 
   <!-- INFO UMKM -->
-  <div class="card mt-4">
+  <div class="card shadow-sm mt-4">
     <div class="card-body">
-      <strong>Nama Usaha :</strong> <?= htmlspecialchars($info['nama_usaha']) ?><br>
-      <strong>Nama Warga :</strong> <?= htmlspecialchars($info['nama_lengkap']) ?><br>
-      <strong>Status Akhir :</strong>
-      <span class="badge bg-success"><?= $status_akhir ?></span>
+      <strong>Nama Usaha:</strong>
+      <?= htmlspecialchars($info['nama_usaha']) ?><br>
+      <strong>Nama Pemilik:</strong>
+      <?= htmlspecialchars($info['nama_lengkap']) ?>
     </div>
   </div>
 
   <!-- TIMELINE -->
   <div class="timeline">
 
-<?php
-$delay = 0;
-while ($bc = mysqli_fetch_assoc($qBC)):
-  $delay += 0.2;
-
-  if ($bc['tipe_transaksi'] === 'pengajuan') {
-    $icon = 'file-alt'; $bg = 'bg-warning';
-    $label = 'Pengajuan UMKM';
-    $desc  = 'Pengajuan UMKM dilakukan oleh warga melalui sistem.';
-  } elseif ($bc['tipe_transaksi'] === 'verifikasi_rt_rw') {
-    $icon = 'user-check'; $bg = 'bg-primary';
-    $label = 'Verifikasi RT/RW';
-    $desc  = 'Data UMKM diverifikasi oleh petugas.';
-  } else {
-    $icon = 'file-signature'; $bg = 'bg-success';
-    $label = 'Surat Legalisasi';
-    $desc  = 'Surat legalisasi UMKM diterbitkan.';
-  }
+<?php if ($qBC->num_rows > 0): ?>
+<?php while ($bc = $qBC->fetch_assoc()):
+  $cfg = $map[$bc['tipe_transaksi']] ?? null;
+  if (!$cfg) continue;
 ?>
-  <div class="timeline-step" style="animation-delay:<?= $delay ?>s">
-    <div class="timeline-icon <?= $bg ?>">
-      <i class="fas fa-<?= $icon ?>"></i>
+  <div class="timeline-step">
+    <div class="timeline-icon <?= $cfg['bg'] ?>">
+      <i class="fas fa-<?= $cfg['icon'] ?>"></i>
     </div>
     <div class="timeline-content">
-      <span class="badge <?= $bg ?> mb-2"><?= $label ?></span>
-      <p class="mb-1"><?= $desc ?></p>
+      <span class="badge <?= $cfg['bg'] ?> mb-2">
+        <?= $cfg['label'] ?>
+      </span>
+      <p class="mb-1"><?= $cfg['desc'] ?></p>
       <small class="text-muted">
         <?= date('d F Y, H:i', strtotime($bc['tanggal_tx'])) ?> WIB
       </small>
       <div class="hash-box mt-2">
-        <?= $bc['hash_tx'] ?>
+        <?= htmlspecialchars($bc['hash_tx']) ?>
       </div>
     </div>
   </div>
 <?php endwhile; ?>
+<?php else: ?>
+  <div class="alert alert-warning mt-4">
+    Belum ada transaksi blockchain untuk UMKM ini.
+  </div>
+<?php endif; ?>
 
   </div>
+
+  <a href="blockchain-list.php" class="btn btn-secondary mt-4">
+    <i class="fas fa-arrow-left"></i> Kembali ke Daftar
+  </a>
+
 </div>
 
-<footer class="py-3 mt-4">
+<!-- FOOTER -->
+<footer class="py-3 mt-5">
   <div class="container text-center">
     <small>
-      © 2026 Sistem Perizinan UMKM <br>
+      © 2026 Sistem Perizinan UMKM<br>
       Kelurahan Serua – Kecamatan Ciputat
     </small>
   </div>

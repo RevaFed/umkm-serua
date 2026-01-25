@@ -1,36 +1,54 @@
 <?php
-session_start();
+require "auth.php";
+require_once "../../config/database.php";
+
+/* ANTI CACHE */
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-require_once "../../config/database.php";
-
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../login.php");
-    exit;
-}
-
 /* =====================
-   STATISTIK
+   STATISTIK UMKM
 ===================== */
 
 // Total UMKM
-$qTotal = mysqli_query($conn, "SELECT COUNT(*) total FROM tbl_umkm");
+$qTotal = mysqli_query($conn, "
+  SELECT COUNT(*) AS total 
+  FROM tbl_umkm
+");
 $total_umkm = mysqli_fetch_assoc($qTotal)['total'];
 
-// Menunggu verifikasi
-$qPending = mysqli_query($conn, "
-  SELECT COUNT(*) total
-  FROM tbl_umkm u
-  LEFT JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
-  WHERE l.id_umkm IS NULL
+// Menunggu RT
+$qWaitRT = mysqli_query($conn, "
+  SELECT COUNT(*) AS total 
+  FROM tbl_umkm 
+  WHERE status = 'menunggu_rt'
 ");
-$pending = mysqli_fetch_assoc($qPending)['total'];
+$menunggu_rt = mysqli_fetch_assoc($qWaitRT)['total'];
+
+// Menunggu RW
+$qWaitRW = mysqli_query($conn, "
+  SELECT COUNT(*) AS total 
+  FROM tbl_umkm 
+  WHERE status = 'menunggu_rw'
+");
+$menunggu_rw = mysqli_fetch_assoc($qWaitRW)['total'];
 
 // Disetujui
-$qApproved = mysqli_query($conn, "SELECT COUNT(*) total FROM tbl_legalisasi");
+$qApproved = mysqli_query($conn, "
+  SELECT COUNT(*) AS total 
+  FROM tbl_umkm 
+  WHERE status = 'disetujui'
+");
 $approved = mysqli_fetch_assoc($qApproved)['total'];
+
+// Ditolak
+$qRejected = mysqli_query($conn, "
+  SELECT COUNT(*) AS total 
+  FROM tbl_umkm 
+  WHERE status IN ('ditolak_rt','ditolak_rw')
+");
+$rejected = mysqli_fetch_assoc($qRejected)['total'];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -41,14 +59,12 @@ $approved = mysqli_fetch_assoc($qApproved)['total'];
 
 <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="../../assets/fontawesome/css/all.min.css">
-<link rel="stylesheet" href="../../assets/plugins/datatables/datatables.min.css">
 <link rel="stylesheet" href="../../assets/styles/admin-styles.css">
 </head>
 
 <body>
-  <div class="overlay" id="overlay"></div>
-
 <div class="wrapper">
+
 <?php include "sidebar.php"; ?>
 
 <main class="content">
@@ -67,9 +83,17 @@ $approved = mysqli_fetch_assoc($qApproved)['total'];
 
   <div class="col-md-3">
     <div class="stat-card">
-      <div class="stat-icon bg-warning"><i class="fas fa-clock"></i></div>
-      <div>Menunggu Verifikasi</div>
-      <h3><?= $pending ?></h3>
+      <div class="stat-icon bg-warning"><i class="fas fa-user-clock"></i></div>
+      <div>Menunggu RT</div>
+      <h3><?= $menunggu_rt ?></h3>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-info"><i class="fas fa-users"></i></div>
+      <div>Menunggu RW</div>
+      <h3><?= $menunggu_rw ?></h3>
     </div>
   </div>
 
@@ -81,14 +105,16 @@ $approved = mysqli_fetch_assoc($qApproved)['total'];
     </div>
   </div>
 
+</div>
+
+<div class="row g-4 mb-4">
   <div class="col-md-3">
     <div class="stat-card">
       <div class="stat-icon bg-danger"><i class="fas fa-times"></i></div>
       <div>Ditolak</div>
-      <h3>0</h3>
+      <h3><?= $rejected ?></h3>
     </div>
   </div>
-
 </div>
 
 <!-- ================= TABLE ================= -->
@@ -96,7 +122,7 @@ $approved = mysqli_fetch_assoc($qApproved)['total'];
   <h6 class="mb-3">Pengajuan UMKM Terbaru</h6>
 
   <div class="table-responsive">
-    <table id="tableUmkm" class="table table-striped table-hover align-middle">
+    <table class="table table-striped table-hover align-middle">
       <thead>
         <tr>
           <th>Nama Usaha</th>
@@ -110,12 +136,10 @@ $approved = mysqli_fetch_assoc($qApproved)['total'];
 
 <?php
 $qLatest = mysqli_query($conn, "
-  SELECT u.*, 
-         IF(l.id_umkm IS NULL, 'Menunggu', 'Disetujui') AS status
-  FROM tbl_umkm u
-  LEFT JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
-  ORDER BY u.created_at DESC
-  LIMIT 50
+  SELECT id_umkm, nama_usaha, jenis_usaha, created_at, status
+  FROM tbl_umkm
+  ORDER BY created_at DESC
+  LIMIT 10
 ");
 
 while ($row = mysqli_fetch_assoc($qLatest)):
@@ -125,11 +149,25 @@ while ($row = mysqli_fetch_assoc($qLatest)):
           <td><?= htmlspecialchars($row['jenis_usaha']) ?></td>
           <td><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
           <td>
-            <?php if ($row['status'] === 'Disetujui'): ?>
-              <span class="badge bg-success">Disetujui</span>
-            <?php else: ?>
-              <span class="badge bg-warning text-dark">Menunggu</span>
-            <?php endif; ?>
+            <?php
+            switch ($row['status']) {
+              case 'menunggu_rt':
+                echo '<span class="badge bg-warning text-dark">Menunggu RT</span>';
+                break;
+              case 'menunggu_rw':
+                echo '<span class="badge bg-info text-dark">Menunggu RW</span>';
+                break;
+              case 'ditolak_rt':
+                echo '<span class="badge bg-danger">Ditolak RT</span>';
+                break;
+              case 'ditolak_rw':
+                echo '<span class="badge bg-danger">Ditolak RW</span>';
+                break;
+              case 'disetujui':
+                echo '<span class="badge bg-success">Disetujui</span>';
+                break;
+            }
+            ?>
           </td>
           <td>
             <a href="detail_umkm.php?id=<?= $row['id_umkm'] ?>" 
@@ -148,33 +186,7 @@ while ($row = mysqli_fetch_assoc($qLatest)):
 </main>
 </div>
 
-<?php include "footer.php"?>
-<script>
-$(document).ready(function () {
-  $('#tableUmkm').DataTable({
-    pageLength: 5,
-    lengthChange: false,
-    ordering: true,
-    searching: true,
-    info: false,
-    language: {
-      search: "Cari UMKM:",
-      zeroRecords: "Data tidak ditemukan",
-      paginate: {
-        next: "›",
-        previous: "‹"
-      }
-    }
-  });
-});
-</script>
-
-<!-- ANTI BACK CACHE -->
-<script>
-window.addEventListener("pageshow", function (event) {
-  if (event.persisted) window.location.reload();
-});
-</script>
-
+<script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+<?php include "footer.php"; ?>
 </body>
 </html>

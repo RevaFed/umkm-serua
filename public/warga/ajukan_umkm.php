@@ -188,6 +188,6 @@ foreach ($dokumen as $d):
 </main>
 </div>
 
-<script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+<?php include "footer.php";?>
 </body>
 </html>

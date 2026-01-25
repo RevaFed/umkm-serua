@@ -1,13 +1,8 @@
 <?php
-session_start();
+require "auth.php"; // ⬅️ WAJIB (khusus admin)
 require_once "../../config/database.php";
 
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../login.php");
-    exit;
-}
-
-$id_login = $_SESSION['id'];
+$id_login = $_SESSION['id_admin'];
 
 $q = mysqli_query($conn, "
   SELECT id_admin, nama, username, jabatan, no_hp, created_at
@@ -29,9 +24,8 @@ $q = mysqli_query($conn, "
 </head>
 
 <body>
-   <div class="overlay" id="overlay"></div>
-
 <div class="wrapper">
+
 <?php include "sidebar.php"; ?>
 
 <main class="content">
@@ -120,7 +114,9 @@ $q = mysqli_query($conn, "
 
 </main>
 </div>
-<?php include "footer.php"?>
+
+<?php include "footer.php"; ?>
+
 <script>
 $(document).ready(function () {
   $('#tableAdmin').DataTable({

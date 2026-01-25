@@ -1,8 +1,10 @@
 <?php
 require_once "config/database.php";
 
-/* DATA BLOCKCHAIN TERAKHIR PER UMKM */
-$q = mysqli_query($conn, "
+/* ===============================
+   DATA BLOCKCHAIN TERAKHIR PER UMKM
+================================ */
+$q = $conn->query("
   SELECT 
     w.nama_lengkap,
     u.nama_usaha,
@@ -20,12 +22,24 @@ $q = mysqli_query($conn, "
   )
   ORDER BY tb.tanggal_tx DESC
 ");
+
+/* ===============================
+   MAPPING STATUS → BADGE (FINAL)
+================================ */
+$badgeMap = [
+  'pengajuan' => '<span class="badge bg-secondary">Pengajuan</span>',
+  'verifikasi_rt' => '<span class="badge bg-info text-dark">Diverifikasi RT</span>',
+  'verifikasi_rw' => '<span class="badge bg-warning text-dark">Diverifikasi RW</span>',
+  'surat_pengantar_terbit' => '<span class="badge bg-success">Legalitas Terbit</span>',
+    'pengajuan_ulang' => '<span class="badge bg-secondary">Pengajuan Ulang</span>',
+
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Daftar Blockchain | Kelurahan Serua</title>
+<title>Daftar Blockchain UMKM | Kelurahan Serua</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- BOOTSTRAP -->
@@ -36,39 +50,30 @@ $q = mysqli_query($conn, "
 <link rel="stylesheet" href="assets/datatables/datatables.min.css">
 
 <style>
-/* ===== GLOBAL ===== */
-html, body {
-  height: 100%;
-}
-
+html, body { height:100% }
 body {
-  background: #f4f6f9;
-  display: flex;
-  flex-direction: column;
+  background:#f4f6f9;
+  display:flex;
+  flex-direction:column;
 }
 
-/* ===== HEADER ===== */
-.navbar {
-  margin-bottom: 40px; /* 🔥 JARAK HEADER KE KONTEN */
-}
+/* HEADER */
+.navbar { margin-bottom:40px }
 
-/* ===== MAIN CONTENT ===== */
+/* CONTENT */
 .main-content {
-  flex: 1;
+  flex:1;
   animation: fadeUp .6s ease;
 }
-
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity:0; transform:translateY(20px) }
+  to   { opacity:1; transform:translateY(0) }
 }
 
-/* ===== TITLE ===== */
-.page-title {
-  font-weight: 700;
-}
+/* TITLE */
+.page-title { font-weight:700 }
 
-/* ===== HASH STYLE ===== */
+/* HASH */
 .hash-mini {
   font-family: monospace;
   font-size: 12px;
@@ -76,9 +81,10 @@ body {
   padding: 6px 10px;
   border-radius: 6px;
   display: inline-block;
+  cursor: help;
 }
 
-/* ===== TABLE EFFECT ===== */
+/* TABLE EFFECT */
 tbody tr {
   transition: all .25s ease;
 }
@@ -86,10 +92,10 @@ tbody tr:hover {
   background-color: #eef4ff;
 }
 
-/* ===== FOOTER ===== */
+/* FOOTER */
 footer {
-  background: #031633;
-  color: #bfc7d5;
+  background:#031633;
+  color:#bfc7d5;
 }
 </style>
 </head>
@@ -100,7 +106,7 @@ footer {
 <nav class="navbar navbar-dark bg-primary shadow-sm">
   <div class="container">
     <span class="navbar-brand fw-semibold">
-      <i class="fas fa-link"></i> Daftar Transaksi Blockchain
+      <i class="fas fa-link"></i> Daftar Transaksi Blockchain UMKM
     </span>
   </div>
 </nav>
@@ -117,15 +123,28 @@ footer {
     </p>
   </div>
 
-  <!-- INFO DOWNLOAD SURAT -->
-<div class="alert alert-info d-flex align-items-start mb-4" role="alert">
-  <i class="fas fa-info-circle fa-lg me-3 mt-1"></i>
+  <!-- INFO -->
+  <div class="alert alert-info d-flex align-items-start mb-4">
+    <i class="fas fa-info-circle fa-lg me-3 mt-1"></i>
+    <div>
+      <strong>Informasi:</strong><br>
+      Surat legalitas UMKM hanya dapat diunduh
+      melalui akun pemilik UMKM masing-masing.
+    </div>
+  </div>
+
+  <!-- LABEL PENJELASAN -->
+<div class="alert alert-secondary d-flex align-items-start mb-4">
+  <i class="fas fa-shield-alt fa-lg me-3 mt-1"></i>
   <div>
-    <strong>Informasi:</strong><br>
-    Surat legalitas / surat pengantar yang telah terbit
-    <strong>dapat diunduh melalui akun masing-masing pemilik UMKM</strong>.
+    <strong>Catatan Transparansi:</strong><br>
+    Daftar ini hanya menampilkan UMKM yang memiliki
+    <b>jejak proses legal resmi</b> berbasis blockchain.
+    Pengajuan yang tidak lolos verifikasi tidak dicatat
+    untuk menjaga keabsahan data publik.
   </div>
 </div>
+
 
   <!-- TABLE -->
   <div class="card shadow-sm">
@@ -146,23 +165,19 @@ footer {
           </thead>
           <tbody>
 
-<?php $no=1; while ($row = mysqli_fetch_assoc($q)): ?>
+<?php $no=1; while ($row = $q->fetch_assoc()): ?>
 <tr>
   <td class="text-center"><?= $no++ ?></td>
   <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
   <td><?= htmlspecialchars($row['nama_usaha']) ?></td>
   <td class="text-center">
-    <?php if ($row['tipe_transaksi'] === 'surat_pengantar_terbit'): ?>
-      <span class="badge bg-success">Legalitas Terbit</span>
-    <?php elseif ($row['tipe_transaksi'] === 'verifikasi_rt_rw'): ?>
-      <span class="badge bg-warning text-dark">Verifikasi RT/RW</span>
-    <?php else: ?>
-      <span class="badge bg-secondary">Pengajuan</span>
-    <?php endif; ?>
+    <?= $badgeMap[$row['tipe_transaksi']]
+        ?? '<span class="badge bg-dark">Unknown</span>' ?>
   </td>
   <td>
-    <span class="hash-mini">
-      <?= substr($row['hash_tx'], 0, 28) ?>...
+    <span class="hash-mini"
+          title="<?= htmlspecialchars($row['hash_tx']) ?>">
+      <?= substr($row['hash_tx'], 0, 30) ?>...
     </span>
   </td>
   <td class="text-center">

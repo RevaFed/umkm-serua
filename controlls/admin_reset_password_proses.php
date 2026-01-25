@@ -14,35 +14,49 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$id_admin = (int) ($_POST['id_admin'] ?? 0);
-$baru     = $_POST['password_baru'] ?? '';
-$konf     = $_POST['password_konfirmasi'] ?? '';
+$id_target = (int)($_POST['id_admin'] ?? 0);
+$id_login  = $_SESSION['id_admin'];
 
-/* VALIDASI */
-if ($id_admin === 0 || empty($baru) || empty($konf)) {
+$baru = $_POST['password_baru'] ?? '';
+$konf = $_POST['password_konfirmasi'] ?? '';
+
+/* VALIDASI DASAR */
+if ($id_target === 0 || empty($baru) || empty($konf)) {
     $_SESSION['alert'] = 'reset_gagal';
     header("Location: ../public/admin/admin.php");
     exit;
 }
 
+/* CEGAH RESET PASSWORD AKUN SENDIRI */
+if ($id_target === $id_login) {
+    $_SESSION['alert'] = 'reset_diri_sendiri';
+    header("Location: ../public/admin/admin.php");
+    exit;
+}
+
+/* PASSWORD HARUS SAMA */
 if ($baru !== $konf) {
     $_SESSION['alert'] = 'password_tidak_sama';
     header("Location: ../public/admin/admin.php");
     exit;
 }
 
-/* HASH PASSWORD BARU */
+/* HASH PASSWORD */
 $password_hash = password_hash($baru, PASSWORD_DEFAULT);
 
-/* UPDATE PASSWORD */
-$update = mysqli_query($conn, "
+/* UPDATE PASSWORD (AMAN) */
+$stmt = $conn->prepare("
     UPDATE tbl_admin
-    SET password = '$password_hash'
-    WHERE id_admin = '$id_admin'
+    SET password = ?
+    WHERE id_admin = ?
 ");
+$stmt->bind_param("si", $password_hash, $id_target);
+$stmt->execute();
 
-if (!$update) {
-    die("Gagal reset password: " . mysqli_error($conn));
+if ($stmt->affected_rows === 0) {
+    $_SESSION['alert'] = 'reset_gagal';
+    header("Location: ../public/admin/admin.php");
+    exit;
 }
 
 /* ALERT SUKSES */

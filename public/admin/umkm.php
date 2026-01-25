@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "auth.php";
 require_once "../../config/database.php";
 
 /* ANTI CACHE */
@@ -7,24 +7,17 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-/* AUTH ADMIN */
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../login.php");
-    exit;
-}
-
-/* DATA UMKM */
+/* DATA UMKM (ADMIN = MONITORING) */
 $qUmkm = mysqli_query($conn, "
   SELECT 
     u.id_umkm,
     u.nama_usaha,
     u.jenis_usaha,
     u.created_at,
-    w.nama_lengkap,
-    IF(l.id_umkm IS NULL, 'Menunggu', 'Disetujui') AS status
+    u.status,
+    w.nama_lengkap
   FROM tbl_umkm u
   JOIN tbl_warga w ON u.id_warga = w.id_warga
-  LEFT JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
   ORDER BY u.created_at DESC
 ");
 ?>
@@ -42,15 +35,17 @@ $qUmkm = mysqli_query($conn, "
 </head>
 
 <body>
- <div class="overlay" id="overlay"></div>
 <div class="wrapper">
+
 <?php include "sidebar.php"; ?>
 
 <main class="content">
 <?php include "topbar.php"; ?>
 
 <div class="table-box">
-  <h5 class="mb-3">Data Pengajuan UMKM</h5>
+  <h5 class="mb-3">
+    <i class="fas fa-store"></i> Data Pengajuan UMKM
+  </h5>
 
   <div class="table-responsive">
     <table id="tableUmkm" class="table table-striped table-hover align-middle">
@@ -78,14 +73,30 @@ while ($row = mysqli_fetch_assoc($qUmkm)):
           <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
           <td><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
           <td>
-            <?php if ($row['status'] === 'Disetujui'): ?>
-              <span class="badge bg-success">Disetujui</span>
-            <?php else: ?>
-              <span class="badge bg-warning text-dark">Menunggu</span>
-            <?php endif; ?>
+            <?php
+            switch ($row['status']) {
+              case 'menunggu_rt':
+                echo '<span class="badge bg-warning text-dark">Menunggu RT</span>';
+                break;
+              case 'menunggu_rw':
+                echo '<span class="badge bg-info text-dark">Menunggu RW</span>';
+                break;
+              case 'ditolak_rt':
+                echo '<span class="badge bg-danger">Ditolak RT</span>';
+                break;
+              case 'ditolak_rw':
+                echo '<span class="badge bg-danger">Ditolak RW</span>';
+                break;
+              case 'disetujui':
+                echo '<span class="badge bg-success">Disetujui</span>';
+                break;
+              default:
+                echo '<span class="badge bg-secondary">Tidak Diketahui</span>';
+            }
+            ?>
           </td>
           <td>
-            <a href="detail_umkm.php?id=<?= $row['id_umkm'] ?>" 
+            <a href="detail_umkm.php?id=<?= $row['id_umkm'] ?>"
                class="btn btn-sm btn-primary">
               <i class="fas fa-eye"></i> Detail
             </a>
@@ -101,7 +112,10 @@ while ($row = mysqli_fetch_assoc($qUmkm)):
 </main>
 </div>
 
-<?php include "footer.php"?>
+<?php include "footer.php"; ?>
+
+<script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/plugins/datatables/datatables.min.js"></script>
 
 <script>
 $(document).ready(function () {

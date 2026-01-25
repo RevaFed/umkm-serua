@@ -1,27 +1,38 @@
 <?php
-session_start();
+require "auth.php";
 require_once "../../config/database.php";
 
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../login.php");
-    exit;
-}
-
 $id_target = (int)($_GET['id'] ?? 0);
-$id_login  = $_SESSION['id'];
+$id_login  = $_SESSION['id_admin'];
 
 if ($id_target === 0) {
     header("Location: admin.php");
     exit;
 }
 
-/* DATA ADMIN TARGET */
-$q = mysqli_query($conn, "SELECT id_admin, nama FROM tbl_admin WHERE id_admin='$id_target'");
-if (mysqli_num_rows($q) === 0) {
+/* CEGAH RESET PASSWORD AKUN SENDIRI */
+if ($id_target === $id_login) {
+    $_SESSION['alert'] = 'reset_diri_sendiri';
     header("Location: admin.php");
     exit;
 }
-$admin = mysqli_fetch_assoc($q);
+
+/* DATA ADMIN TARGET */
+$stmt = $conn->prepare("
+    SELECT id_admin, nama 
+    FROM tbl_admin 
+    WHERE id_admin = ?
+");
+$stmt->bind_param("i", $id_target);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    header("Location: admin.php");
+    exit;
+}
+
+$admin = $result->fetch_assoc();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -35,7 +46,7 @@ $admin = mysqli_fetch_assoc($q);
 <link rel="stylesheet" href="../../assets/styles/admin-styles.css">
 </head>
 <body>
- <div class="overlay" id="overlay"></div>
+
 <div class="wrapper">
 <?php include "sidebar.php"; ?>
 
@@ -43,7 +54,9 @@ $admin = mysqli_fetch_assoc($q);
 <?php include "topbar.php"; ?>
 
 <div class="card-box" style="max-width:500px">
-  <h5 class="mb-3"><i class="fas fa-key"></i> Reset Password Admin</h5>
+  <h5 class="mb-3">
+    <i class="fas fa-key"></i> Reset Password Admin
+  </h5>
 
   <p>
     Admin: <strong><?= htmlspecialchars($admin['nama']) ?></strong>
@@ -74,7 +87,8 @@ $admin = mysqli_fetch_assoc($q);
 </main>
 </div>
 
+<?php include "footer.php"; ?>
+
 <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-<?php include "footer.php"?>
 </body>
 </html>

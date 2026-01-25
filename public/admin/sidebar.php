@@ -14,11 +14,6 @@
     <i class="fas fa-file-alt"></i> Data UMKM
   </a>
 
-  <!-- VERIFIKASI = FILTER LIST -->
-  <a href="umkm.php?filter=verifikasi">
-    <i class="fas fa-check-circle"></i> Verifikasi
-  </a>
-
   <a href="warga.php">
     <i class="fas fa-users"></i> Data Warga
   </a>
@@ -27,6 +22,8 @@
     <i class="fas fa-cog"></i> Pengaturan
   </a>
 
+  <hr>
+  
   <a href="../../controlls/logout.php">
     <i class="fas fa-sign-out-alt"></i> Logout
   </a>

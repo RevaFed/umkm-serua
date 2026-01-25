@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "auth.php";
 require_once "../../config/database.php";
 
 /* ANTI CACHE */
@@ -7,28 +7,19 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-/* AUTH WARGA */
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'warga') {
-    header("Location: ../login.php");
-    exit;
-}
-
 $id_warga = $_SESSION['id_warga'];
 
 /* DATA RIWAYAT UMKM */
 $qRiwayat = mysqli_query($conn, "
   SELECT 
-    u.id_umkm,
-    u.nama_usaha,
-    u.jenis_usaha,
-    u.created_at,
-    l.nomor_surat,
-    l.file_surat,
-    l.tanggal_terbit
-  FROM tbl_umkm u
-  LEFT JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
-  WHERE u.id_warga = '$id_warga'
-  ORDER BY u.created_at DESC
+    id_umkm,
+    nama_usaha,
+    jenis_usaha,
+    created_at,
+    status
+  FROM tbl_umkm
+  WHERE id_warga = '$id_warga'
+  ORDER BY created_at DESC
 ");
 ?>
 <!DOCTYPE html>
@@ -53,7 +44,9 @@ $qRiwayat = mysqli_query($conn, "
 <?php include "topbar.php"; ?>
 
 <div class="card-box">
-  <h5 class="mb-3"><i class="fas fa-history"></i> Riwayat Pengajuan UMKM</h5>
+  <h5 class="mb-3">
+    <i class="fas fa-history"></i> Riwayat Pengajuan UMKM
+  </h5>
 
   <div class="table-responsive">
     <table id="tableRiwayatUmkm" class="table table-striped table-hover align-middle">
@@ -72,7 +65,6 @@ $qRiwayat = mysqli_query($conn, "
 
 <?php
 $no = 1;
-if (mysqli_num_rows($qRiwayat) > 0):
 while ($row = mysqli_fetch_assoc($qRiwayat)):
 ?>
         <tr>
@@ -81,35 +73,63 @@ while ($row = mysqli_fetch_assoc($qRiwayat)):
           <td><?= htmlspecialchars($row['jenis_usaha']) ?></td>
           <td><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
           <td>
-            <?php if ($row['nomor_surat']): ?>
-              <span class="badge bg-success">Disetujui</span>
-            <?php else: ?>
-              <span class="badge bg-warning text-dark">Menunggu</span>
-            <?php endif; ?>
+            <?php
+            switch ($row['status']) {
+              case 'menunggu_rt':
+                echo '<span class="badge bg-warning text-dark">Menunggu RT</span>';
+                break;
+              case 'menunggu_rw':
+                echo '<span class="badge bg-info text-dark">Menunggu RW</span>';
+                break;
+              case 'ditolak_rt':
+                echo '<span class="badge bg-danger">Ditolak RT</span>';
+                break;
+              case 'ditolak_rw':
+                echo '<span class="badge bg-danger">Ditolak RW</span>';
+                break;
+              case 'disetujui':
+                echo '<span class="badge bg-success">Disetujui</span>';
+                break;
+            }
+            ?>
           </td>
           <td>
-            <?php if ($row['nomor_surat']): ?>
-              Surat terbit <?= date('d-m-Y', strtotime($row['tanggal_terbit'])) ?>
-            <?php else: ?>
-              Dalam proses verifikasi RT/RW
-            <?php endif; ?>
+            <?php
+            switch ($row['status']) {
+              case 'menunggu_rt':
+                echo 'Sedang diverifikasi RT';
+                break;
+              case 'menunggu_rw':
+                echo 'Sedang diverifikasi RW';
+                break;
+              case 'ditolak_rt':
+                echo 'Ditolak oleh RT';
+                break;
+              case 'ditolak_rw':
+                echo 'Ditolak oleh RW';
+                break;
+              case 'disetujui':
+                echo 'Surat pengantar telah diterbitkan';
+                break;
+            }
+            ?>
           </td>
           <td>
             <a href="detail_umkm.php?id=<?= $row['id_umkm'] ?>"
-               class="btn btn-sm btn-primary">
+               class="btn btn-sm btn-primary mb-2">
               <i class="fas fa-eye"></i> Detail
             </a>
 
-            <?php if ($row['file_surat']): ?>
-              <a href="../../uploads/surat/<?= $row['file_surat'] ?>"
+            <?php if ($row['status'] === 'disetujui'): ?>
+              <a href="../../uploads/surat/<?= $row['id_umkm'] ?>.pdf"
                  target="_blank"
-                 class="btn btn-sm btn-success">
+                 class="btn btn-sm btn-success ms-1">
                 <i class="fas fa-file-pdf"></i> Surat
               </a>
             <?php endif; ?>
           </td>
         </tr>
-<?php endwhile; endif; ?>
+<?php endwhile; ?>
 
       </tbody>
     </table>
@@ -119,11 +139,7 @@ while ($row = mysqli_fetch_assoc($qRiwayat)):
 </main>
 </div>
 
-<!-- ================= JS ================= -->
-<script src="../../assets/plugins/jquery/jquery.min.js"></script>
-<script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="../../assets/plugins/datatables/datatables.min.js"></script>
-
+<?php include "footer.php";?>
 <script>
 $(document).ready(function () {
   $('#tableRiwayatUmkm').DataTable({
@@ -148,7 +164,6 @@ $(document).ready(function () {
 });
 </script>
 
-<!-- ANTI BACK CACHE -->
 <script>
 window.addEventListener("pageshow", function (event) {
   if (event.persisted) window.location.reload();

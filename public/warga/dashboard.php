@@ -1,42 +1,46 @@
 <?php
-session_start();
+require "auth.php";
+require_once "../../config/database.php";
+
+/* ANTI CACHE */
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
-require_once "../../config/database.php";
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'warga') {
-    header("Location: ../../login.php");
-    exit;
-}
+header("Expires: 0");
 
 $id_warga = $_SESSION['id_warga'];
 
 /* TOTAL PENGAJUAN */
 $qTotal = mysqli_query($conn, "
-  SELECT COUNT(*) AS total 
-  FROM tbl_umkm 
-  WHERE id_warga='$id_warga'
+  SELECT COUNT(*) AS total
+  FROM tbl_umkm
+  WHERE id_warga = '$id_warga'
 ");
 $total = mysqli_fetch_assoc($qTotal)['total'];
 
-/* SUDAH DISAHKAN (ADA SURAT) */
+/* DISSETUJUI */
 $qSetuju = mysqli_query($conn, "
-  SELECT COUNT(*) AS setuju
-  FROM tbl_umkm u
-  JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
-  WHERE u.id_warga='$id_warga'
+  SELECT COUNT(*) AS total
+  FROM tbl_umkm
+  WHERE id_warga = '$id_warga'
+    AND status = 'disetujui'
 ");
-$setuju = mysqli_fetch_assoc($qSetuju)['setuju'];
+$setuju = mysqli_fetch_assoc($qSetuju)['total'];
 
 /* DALAM PROSES */
-$proses = $total - $setuju;
+$qProses = mysqli_query($conn, "
+  SELECT COUNT(*) AS total
+  FROM tbl_umkm
+  WHERE id_warga = '$id_warga'
+    AND status IN ('menunggu_rt','menunggu_rw')
+");
+$proses = mysqli_fetch_assoc($qProses)['total'];
 
 /* UMKM TERAKHIR */
 $qLast = mysqli_query($conn, "
-  SELECT u.*, l.nomor_surat
-  FROM tbl_umkm u
-  LEFT JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
-  WHERE u.id_warga='$id_warga'
-  ORDER BY u.created_at DESC
+  SELECT nama_usaha, created_at, status
+  FROM tbl_umkm
+  WHERE id_warga = '$id_warga'
+  ORDER BY created_at DESC
   LIMIT 1
 ");
 $last = mysqli_fetch_assoc($qLast);
@@ -57,10 +61,10 @@ $last = mysqli_fetch_assoc($qLast);
 <div class="overlay" id="overlay"></div>
 
 <div class="wrapper">
-<?php include "sidebar.php"?>
+<?php include "sidebar.php"; ?>
 
 <main class="content">
-<?php include "topbar.php"?>
+<?php include "topbar.php"; ?>
 
 <!-- CARDS -->
 <div class="row g-4 mb-4">
@@ -91,13 +95,13 @@ $last = mysqli_fetch_assoc($qLast);
 
 </div>
 
-<!-- STATUS -->
+<!-- STATUS TERAKHIR -->
 <div class="card-box d-flex justify-content-between align-items-center flex-wrap gap-2">
   <div>
     <strong>Status UMKM Terakhir</strong><br>
 
     <?php if ($last): ?>
-      <?= $last['nama_usaha'] ?><br>
+      <?= htmlspecialchars($last['nama_usaha']) ?><br>
       <small class="text-muted">
         Diajukan <?= date('d F Y', strtotime($last['created_at'])) ?>
       </small>
@@ -107,31 +111,29 @@ $last = mysqli_fetch_assoc($qLast);
 
   </div>
 
-  <?php if ($last && $last['nomor_surat']): ?>
-    <span class="badge bg-success px-3 py-2">Surat Terbit</span>
-  <?php elseif ($last): ?>
-    <span class="badge bg-warning text-dark px-3 py-2">Dalam Verifikasi</span>
+  <?php if ($last): ?>
+    <?php
+      switch ($last['status']) {
+        case 'menunggu_rt':
+          echo '<span class="badge bg-warning text-dark px-3 py-2">Menunggu RT</span>';
+          break;
+        case 'menunggu_rw':
+          echo '<span class="badge bg-info text-dark px-3 py-2">Menunggu RW</span>';
+          break;
+        case 'ditolak_rt':
+        case 'ditolak_rw':
+          echo '<span class="badge bg-danger px-3 py-2">Ditolak</span>';
+          break;
+        case 'disetujui':
+          echo '<span class="badge bg-success px-3 py-2">Disetujui</span>';
+          break;
+      }
+    ?>
   <?php endif; ?>
 </div>
 
 </main>
 </div>
-
-<script>
-const btn = document.getElementById("btnMenu");
-const sidebar = document.getElementById("sidebar");
-const overlay = document.getElementById("overlay");
-
-btn.onclick = () => {
-  sidebar.classList.add("show");
-  overlay.classList.add("show");
-};
-
-overlay.onclick = () => {
-  sidebar.classList.remove("show");
-  overlay.classList.remove("show");
-};
-</script>
-
+<?php include "footer.php";?>
 </body>
 </html>
