@@ -1,125 +1,107 @@
-# UMKM Serua  
-**Sistem Perizinan UMKM Berbasis Web dengan Konsep Blockchain-inspired Audit Trail**
+UMKM Serua
 
-Aplikasi web berbasis **PHP & MySQL** yang dikembangkan untuk mendukung  
-**transparansi, akuntabilitas, dan efisiensi proses perizinan UMKM**  
-di **Kelurahan Serua, Ciputat**, dengan pendekatan **Design Thinking**  
-dan konsep **Blockchain-inspired Audit Trail**.
+Sistem Perizinan UMKM Berbasis Web (Blockchain-inspired Audit Trail)
 
----
+Aplikasi web berbasis PHP & MySQL untuk mendukung transparansi, akuntabilitas, dan efisiensi proses perizinan UMKM di Kelurahan Serua, Ciputat.
+Dikembangkan dengan pendekatan Design Thinking dan konsep Blockchain-inspired Audit Trail.
 
-## 📌 Latar Belakang
-Proses perizinan UMKM di tingkat kelurahan masih banyak dilakukan secara manual
-sehingga berpotensi menimbulkan permasalahan seperti keterlambatan proses,
-kurangnya transparansi status perizinan, serta tidak tersedianya jejak perubahan data.
+🎯 Tujuan
 
-Oleh karena itu, dikembangkan sebuah sistem informasi berbasis web
-yang mampu memberikan kemudahan akses, transparansi proses,
-serta pencatatan histori perubahan data secara terstruktur.
+- Digitalisasi proses perizinan UMKM
+- Transparansi status pengajuan
+- Pencatatan histori perubahan data (audit trail)
+- Peningkatan kualitas layanan publik kelurahan
 
----
+🔐 Blockchain-inspired Audit Trail
 
-## 🎯 Tujuan Pengembangan
-- Digitalisasi proses pengajuan dan pengelolaan perizinan UMKM
-- Meningkatkan transparansi status perizinan
-- Menyediakan histori perubahan data (audit trail)
-- Meningkatkan kualitas layanan publik di tingkat kelurahan
+Sistem tidak menggunakan blockchain publik, tetapi mengadopsi prinsip dasarnya:
+- Hashing data
+- Rantai histori perubahan (linked records)
+- Timestamp setiap perubahan
+- Perubahan data selalu meninggalkan jejak
 
----
+👥 Hak Akses
 
-## 🧩 Ruang Lingkup Sistem
-- Pengelolaan data pelaku UMKM
-- Pengajuan perizinan UMKM secara online
-- Verifikasi dan validasi data oleh admin
-- Monitoring status perizinan
-- Pencatatan histori perubahan data berbasis hash
+👤 Admin
 
----
-
-## 🔐 Konsep Blockchain-inspired Audit Trail
-Sistem ini tidak menggunakan blockchain publik, namun mengadopsi prinsip dasar blockchain,
-antara lain:
-- Hashing data menggunakan algoritma kriptografi
-- Rantai histori perubahan data (linked records)
-- Timestamp pada setiap perubahan data
-- Data tidak dapat diubah tanpa meninggalkan jejak perubahan
-
-Implementasi konsep ini bertujuan untuk menjaga integritas dan transparansi data perizinan.
-
----
-
-## 👥 Hak Akses Pengguna
-### 1️⃣ Admin
-- Login sistem
-- Verifikasi dan validasi perizinan UMKM
+- Kelola data pengguna & UMKM
+- Monitoring seluruh proses perizinan
 - Melihat histori perubahan data (audit trail)
-- Mengelola data pengguna dan UMKM
 
-### 2️⃣ Warga / Pelaku UMKM
-- Registrasi dan login akun
-- Mengajukan perizinan UMKM
-- Melihat status permohonan perizinan
-- Monitoring proses perizinan
+🏘️ Admin RT
 
+- Verifikasi awal pengajuan UMKM di wilayah RT
+- Memberikan persetujuan / penolakan
+- Melihat status UMKM RT terkait
 
-## 🗂️ Struktur Direktori
+🏢 Admin RW
+
+- Verifikasi lanjutan setelah RT
+- Persetujuan / penolakan tingkat RW
+- Monitoring UMKM di wilayah RW
+
+🧑‍💼 Warga / Pelaku UMKM
+
+- Registrasi & login
+- Pengajuan perizinan UMKM
+
+  Admin :
+  username : admin, password : admin123
+  RT :
+  username : asep, password : 123
+  RW :
+  username : adjie, password : 123
+  Warga
+  username : topik, password : 123
+
+🗂️ Struktur Singkat
 umkm/
-├── assets/ # File pendukung (CSS, JavaScript, gambar)
-├── config/ # Konfigurasi aplikasi & database
-├── controls/ # Logic aplikasi (controller / proses)
-├── public/ # Halaman publik (frontend)
-├── uploads/ # Penyimpanan dokumen UMKM
-├── vendor/ # Library pihak ketiga
-│
-├── blockchain_detail.php # Detail histori perubahan data (audit trail)
-├── blockchain-list.php # Daftar rantai histori berbasis hash
-├── hash.php # Fungsi hashing data
-│
-├── index.html # Halaman utama aplikasi
-├── login.php # Autentikasi pengguna
-├── register.php # Registrasi akun UMKM
-│
-├── umkm.sql # Struktur database
-├── README.md # Dokumentasi proyek
+├── assets/
+├── config/
+├── controls/
+├── public/
+├── uploads/
+├── blockchain_list.php
+├── blockchain_detail.php
+├── hash.php
+├── umkm.sql
+└── README.md
 
+⚙️ Teknologi
 
-## ⚙️ Spesifikasi Sistem
-### Perangkat Lunak
 - PHP Native
 - MySQL
-- Apache Web Server (Laragon)
 - Bootstrap
+- Apache (Laragon)
 - phpMyAdmin
 
-### Perangkat Keras Minimal
-- Processor Dual Core
-- RAM 4 GB
-- Penyimpanan 20 GB
-- Sistem Operasi Windows / Linux
+🛠️ Instalasi Singkat
 
----
+- Clone / download project
+- Pindahkan ke C:\laragon\www\
+- Import umkm.sql via phpMyAdmin
+- Atur koneksi database di config/
 
-## 🛠️ Cara Instalasi
-1. Clone repository atau download project
-2. Pindahkan folder ke direktori web server
-   C:\laragon\www\
-4. Import database:
-- Buka phpMyAdmin
-- Import file `umkm.sql`
-4. Konfigurasi koneksi database pada:
-config/koneksi.php
+🆕 Update Pengembangan (Januari 2026)
+
+Update Terbaru:
+- Penyempurnaan alur persetujuan UMKM (Admin → RT → RW)
+- Penyesuaian struktur role (Admin / RT / RW tanpa tabel users)
+- Perbaikan validasi form & keamanan PHP 8.1+
+- Implementasi audit trail berbasis hash lebih konsisten
+- Perapihan frontend & UI dashboard admin
+- Perbaikan bug edit data & deprecated warning PHP
+
+Dalam Progres:
+- Cetak surat legalisasi UMKM
+- Optimalisasi UX warga
+- Dokumentasi teknis lanjutan
+
+📄 Lisensi
+
+Proyek ini dibuat untuk keperluan akademik dan edukasi.
 
 
-## 📝 Riwayat Pengembangan
-### 📅 Januari 2026
-- Perancangan struktur aplikasi
-- Implementasi sistem perizinan UMKM
-- Penerapan konsep blockchain-inspired audit trail
-- Rapihkan Frontend
-- Minus Print Surat Legalisasi Belum
+atau versi README super singkat (1 layar GitHub)
 
-  
-## 📄 Lisensi
-Proyek ini dibuat untuk keperluan **akademik dan edukasi**.
-- Pengujian sistem
-- Dokumentasi aplikasi (README)
+atau disesuaikan buat proposal skripsi / laporan akhir
