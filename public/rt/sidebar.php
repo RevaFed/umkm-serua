@@ -8,6 +8,10 @@
     <i class="fas fa-home"></i> Dashboard
   </a>
 
+   <a href="profil.php" class="<?= basename($_SERVER['PHP_SELF']) === 'profil.php' ? 'active' : '' ?>">
+    <i class="fas fa-user"></i> Profil
+  </a>
+
   <a href="umkm.php" class="<?= basename($_SERVER['PHP_SELF']) === 'umkm.php' ? 'active' : '' ?>">
     <i class="fas fa-file-alt"></i> Verifikasi UMKM
   </a>

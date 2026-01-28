@@ -105,13 +105,14 @@ while ($row = mysqli_fetch_assoc($qUmkm)):
               <i class="fas fa-eye"></i> Detail
             </a>
 
-            <?php if ($row['status'] === 'disetujui'): ?>
-              <a href="../../uploads/surat/<?= $row['id_umkm'] ?>.pdf"
-                 target="_blank"
-                 class="btn btn-sm btn-success ms-1">
-                <i class="fas fa-file-pdf"></i> Surat
-              </a>
-            <?php endif; ?>
+<?php if ($row['status'] === 'disetujui'): ?>
+  <a href="../../uploads/surat/surat_umkm_<?= $row['id_umkm'] ?>.pdf"
+     target="_blank"
+     class="btn btn-sm btn-success ms-1">
+    <i class="fas fa-file-pdf"></i> Surat
+  </a>
+<?php endif; ?>
+
           </td>
         </tr>
 <?php endwhile; ?>

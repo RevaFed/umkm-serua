@@ -1,20 +1,17 @@
 <?php
-require_once __DIR__ . "/../config/database.php";
-require_once __DIR__ . "/../assets/plugins/fpdf/fpdf.php";
+require_once __DIR__ . "/controlls/../config/database.php";
+require_once __DIR__ . "/controlls/../assets/plugins/fpdf/fpdf.php";
 
 /* ===============================
    MODE & VALIDASI
 ================================ */
 $id_umkm = (int)($_GET['id'] ?? 0);
-$mode    = $_GET['mode'] ?? 'save'; // preview | save
+$mode    = $_GET['mode'] ?? 'preview'; // preview | save
 
 if ($id_umkm === 0) {
     exit("ID tidak valid");
 }
 
-/* ===============================
-   HELPER TANGGAL INDONESIA
-================================ */
 function tanggalIndo($tanggal = null)
 {
     $bulan = [
@@ -23,15 +20,12 @@ function tanggalIndo($tanggal = null)
              'September', 'Oktober', 'November', 'Desember'
     ];
 
-    if (empty($tanggal)) {
-        return '-';
-    }
-
-    $tgl   = date('Y-m-d', strtotime($tanggal));
+    $tgl = $tanggal ? date('Y-m-d', strtotime($tanggal)) : date('Y-m-d');
     $pecah = explode('-', $tgl);
 
-    return $pecah[2] . ' ' . $bulan[(int)$pecah[1]] . ' ' . $pecah[0];
+    return $pecah[2].' '.$bulan[(int)$pecah[1]].' '.$pecah[0];
 }
+
 
 /* ===============================
    AMBIL DATA
@@ -65,9 +59,10 @@ $q = mysqli_query($conn, "
 
     FROM tbl_umkm u
     JOIN tbl_warga w ON u.id_warga = w.id_warga
-    LEFT JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
+    JOIN tbl_legalisasi l ON u.id_umkm = l.id_umkm
     WHERE u.id_umkm = '$id_umkm'
 ");
+
 
 $data = mysqli_fetch_assoc($q);
 if (!$data) {
@@ -75,12 +70,11 @@ if (!$data) {
 }
 
 /* ===============================
-   NORMALISASI DATA
+   NORMALISASI DATA (ANTI ERROR)
 ================================ */
-$data['tanggal_lahir']     = $data['tanggal_lahir'] ?? '';
-$data['agama']             = $data['agama'] ?? '-';
-$data['status_perkawinan'] = $data['status_perkawinan'] ?? '-';
-$data['nomor_surat']       = $data['nomor_surat'] ?? '-';
+$data['tanggal_lahir']     = empty($data['tanggal_lahir']) ? '-' : $data['tanggal_lahir'];
+$data['agama']             = empty($data['agama']) ? '-' : $data['agama'];
+$data['status_perkawinan'] = empty($data['status_perkawinan']) ? '-' : $data['status_perkawinan'];
 
 /* ===============================
    GENERATE PDF
@@ -91,7 +85,7 @@ $pdf->SetAutoPageBreak(false);
 $pdf->AddPage();
 
 /* ===== KOP ===== */
-$pdf->Image(__DIR__."/../assets/img/kop_surat.png", 0, -56, 210);
+$pdf->Image(__DIR__."/assets/img/kop_surat.png", 0, -56, 210);
 $pdf->SetY(50);
 
 /* ===== JUDUL ===== */
@@ -127,7 +121,7 @@ $pdf->Cell(50,7,'NIK',0,0);
 $pdf->Cell(0,7,': '.$data['nik'],0,1);
 
 $pdf->Cell(50,7,'Tanggal Lahir',0,0);
-$pdf->Cell(0,7,': '.tanggalIndo($data['tanggal_lahir']),0,1);
+$pdf->Cell(0,7,': '.$data['tanggal_lahir'],0,1);
 
 $pdf->Cell(50,7,'Agama',0,0);
 $pdf->Cell(0,7,': '.$data['agama'],0,1);
@@ -150,74 +144,117 @@ $pdf->MultiCell(0,7,
 );
 
 /* ===============================
-   TANDA TANGAN RT & RW
+   TANDA TANGAN RT & RW (FINAL FIX)
 ================================ */
+
 $pdf->Ln(18);
 
-$xRW = 25;
-$xRT = 150;
+/* ===============================
+   KONFIGURASI POSISI
+================================ */
+$xRW        = 25;    // kiri
+$xRT        = 150;   // kanan
 $lebarKolom = 60;
-$jarakTTD = 22;
-
-$yTTD = $pdf->GetY();
-
-/* RT */
-$pdf->SetXY($xRT, $yTTD);
-$pdf->SetFont('Arial','',11);
-$pdf->Cell($lebarKolom,6,'Serua, '.tanggalIndo(date('Y-m-d')),0,1);
-
-$pdf->SetX($xRT);
-$pdf->SetFont('Arial','B',11);
-$pdf->Cell($lebarKolom,6,'Mengetahui,',0,1);
-
-$pdf->SetX($xRT);
-$pdf->Cell($lebarKolom,6,'Ketua Rukun Tetangga 01',0,1);
-
-/* RW */
-$pdf->SetXY($xRW, $yTTD + 12);
-$pdf->SetFont('Arial','B',11);
-$pdf->Cell($lebarKolom,6,'Ketua Rukun Warga 02',0,1);
-
-/* Nama */
-$yNama = $yTTD + 12 + $jarakTTD;
-
-$pdf->SetXY($xRT, $yNama);
-$pdf->SetFont('Arial','BU',11);
-$pdf->Cell($lebarKolom,6,$data['nama_rt'],0,1,'C');
-
-$pdf->SetXY($xRW, $yNama);
-$pdf->Cell($lebarKolom,6,$data['nama_rw'],0,1,'C');
+$jarakTTD   = 22;
 
 /* ===============================
-   STEMPEL & TTD
+   SIMPAN Y AWAL (KUNCI SEJAJAR)
 ================================ */
+$yTTD = $pdf->GetY();
+
+/* ===============================
+   RT (KANAN)
+================================ */
+$pdf->SetXY($xRT, $yTTD);
+$pdf->SetFont('Arial','',11);
+$pdf->Cell($lebarKolom, 6, 'Serua, '.tanggalIndo(), 0, 1, 'L');
+
+$pdf->SetX($xRT);
+$pdf->SetFont('Arial','B',11);
+$pdf->Cell($lebarKolom, 6, 'Mengetahui,', 0, 1, 'L');
+
+$pdf->SetX($xRT);
+$pdf->Cell($lebarKolom, 6, 'Ketua Rukun Tetangga 01', 0, 1, 'L');
+
+/* ===============================
+   RW (KIRI) — SEJAJAR RT
+================================ */
+$pdf->SetXY($xRW, $yTTD + 12);
+$pdf->SetFont('Arial','B',11);
+$pdf->Cell($lebarKolom, 6, 'Ketua Rukun Warga 02', 0, 1, 'L');
+
+/* ===============================
+   TURUN BERSAMA UNTUK NAMA
+================================ */
+$yNama = $yTTD + 12 + $jarakTTD;
+
+/* NAMA RT */
+$pdf->SetXY($xRT, $yNama);
+$pdf->SetFont('Arial','BU',11);
+$pdf->Cell($lebarKolom, 6, $data['nama_rt'], 0, 1, 'C');
+
+/* NAMA RW */
+$pdf->SetXY($xRW, $yNama);
+$pdf->Cell($lebarKolom, 6, $data['nama_rw'], 0, 1, 'C');
+
+$pdf->SetFont('Arial','',11);
+
+/* ===============================
+   STEMPEL & TTD (PAKAI Y SAMA)
+================================ */
+
 /* RW */
 if (!empty($data['stempel_rw'])) {
-    $pdf->Image(__DIR__."/../uploads/stempel/".$data['stempel_rw'],25,$yNama-30,99);
+    $pdf->Image(
+        __DIR__."/uploads/stempel/".$data['stempel_rw'],
+        25,
+        $yNama - 30,
+        99
+    );
 }
+
 if (!empty($data['ttd_rw'])) {
-    $pdf->Image(__DIR__."/../uploads/ttd/".$data['ttd_rw'],32,$yNama-25,30);
+    $pdf->Image(
+        __DIR__."/uploads/ttd/".$data['ttd_rw'],
+        32,
+        $yNama - 25,
+        30
+    );
 }
 
 /* RT */
 if (!empty($data['stempel_rt'])) {
-    $pdf->Image(__DIR__."/../uploads/stempel/".$data['stempel_rt'],110,$yNama-30,90);
+    $pdf->Image(
+        __DIR__."/uploads/stempel/".$data['stempel_rt'],
+        110,
+        $yNama - 30,
+        90
+    );
 }
+
 if (!empty($data['ttd_rt'])) {
-    $pdf->Image(__DIR__."/../uploads/ttd/".$data['ttd_rt'],160,$yNama-25,30);
+    $pdf->Image(
+        __DIR__."/uploads/ttd/".$data['ttd_rt'],
+        160,
+        $yNama - 25,
+        30
+    );
 }
+
 
 /* ===============================
    OUTPUT
 ================================ */
 if ($mode === 'preview') {
 
+    // === PREVIEW (TANPA SIMPAN) ===
     $pdf->Output('I', 'preview_surat_umkm.pdf');
     exit;
 
 } else {
 
-    $folder = __DIR__ . "/../uploads/surat";
+    // === SIMPAN FILE ===
+    $folder = __DIR__ . "/uploads/surat";
     if (!is_dir($folder)) {
         mkdir($folder, 0777, true);
     }
@@ -227,12 +264,14 @@ if ($mode === 'preview') {
 
     $pdf->Output('F', $pathFile);
 
+    // UPDATE DB
     mysqli_query($conn, "
-        UPDATE tbl_legalisasi 
+        UPDATE tbl_legalisasi
         SET file_surat = '$namaFile'
         WHERE id_umkm = '$id_umkm'
     ");
 
- header("Location: ../public/rw/riwayat.php");
-exit;
+    // REDIRECT KE FILE
+    header("Location: uploads/surat/" . $namaFile);
+    exit;
 }

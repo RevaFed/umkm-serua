@@ -150,23 +150,33 @@ $warga = mysqli_fetch_assoc($qWarga);
 <div class="row g-3">
 <?php
 $dokumen = [
-  "Foto KTP",
-  "Foto Akta Kelahiran",
-  "Foto KK",
-  "Sertifikat Halal",
-  "Foto Menu Jualan",
-  "Foto Tempat Usaha",
-  "Foto Pemilik & Usaha"
+  "Foto KTP" => "KTP pemilik usaha. Gunakan foto jelas dan tidak terpotong.",
+  "Foto Akta Kelahiran" => "Akta kelahiran pemilik usaha (jika ada).",
+  "Foto KK" => "Kartu Keluarga pemilik usaha.",
+  "Sertifikat Halal" => "Diisi jika usaha memiliki sertifikat halal.",
+  "Foto Menu Jualan" => "Foto daftar menu atau produk yang dijual.",
+  "Foto Tempat Usaha" => "Foto tampak depan atau dalam tempat usaha.",
+  "Foto Pemilik & Usaha" => "Foto pemilik di lokasi usaha."
 ];
-foreach ($dokumen as $d):
+
+foreach ($dokumen as $nama => $keterangan):
 ?>
-  <div class="col-md-6">
-    <label class="form-label"><?= $d ?></label>
-    <input type="file" name="dokumen[]" class="form-control" required>
-    <input type="hidden" name="jenis_dokumen[]" value="<?= $d ?>">
+  <div class="col-md-6 mb-3">
+    <label class="form-label fw-semibold"><?= $nama ?></label>
+
+    <input type="file" 
+           name="dokumen[]" 
+           class="form-control">
+
+    <small class="text-muted">
+      <?= $keterangan ?>
+    </small>
+
+    <input type="hidden" 
+           name="jenis_dokumen[]" 
+           value="<?= $nama ?>">
   </div>
 <?php endforeach; ?>
-</div>
 
 <div class="mt-4 d-flex justify-content-between">
   <button type="button" class="btn btn-light"

@@ -20,6 +20,9 @@ $catatan = trim($_POST['catatan'] ?? '');
 $id_rw = $_SESSION['id_admin'];
 $rw    = $_SESSION['rw'];
 
+$nomor_surat = trim($_POST['nomor_surat'] ?? '');
+
+
 if ($id_umkm === 0 || !in_array($aksi, ['setujui','tolak'])) {
     header("Location: ../public/rw/umkm.php");
     exit;
@@ -45,8 +48,11 @@ if ($stmt->get_result()->num_rows === 0) {
 /* ================= SETUJUI RW ================= */
 if ($aksi === 'setujui') {
 
-    /* GENERATE NOMOR SURAT */
-    $nomor_surat = "UMKM/" . date('Y') . "/RW-" . $rw . "/" . str_pad($id_umkm, 4, '0', STR_PAD_LEFT);
+    if ($nomor_surat === '') {
+        $_SESSION['alert'] = 'nomor_surat_wajib';
+        header("Location: ../public/rw/detail_umkm.php?id=".$id_umkm);
+        exit;
+    }
 
     /* UPDATE UMKM */
     $stmt = $conn->prepare("
@@ -61,7 +67,7 @@ if ($aksi === 'setujui') {
     $stmt->execute();
 
     /* SIMPAN LEGALISASI */
-    $file_surat = NULL; // akan digenerate PDF
+    $file_surat = NULL;
     $stmt = $conn->prepare("
       INSERT INTO tbl_legalisasi
       (id_umkm, id_admin, nomor_surat, file_surat, tanggal_terbit)
@@ -70,30 +76,21 @@ if ($aksi === 'setujui') {
     $stmt->bind_param("iiss", $id_umkm, $id_rw, $nomor_surat, $file_surat);
     $stmt->execute();
 
-    /* BLOCKCHAIN: VERIFIKASI RW */
-    $hash1 = hash('sha256', $id_umkm.'verifikasi_rw'.time());
-    $stmt = $conn->prepare("
-      INSERT INTO tbl_transaksi_blockchain
-      (id_umkm, tipe_transaksi, hash_tx, tanggal_tx)
-      VALUES (?, 'verifikasi_rw', ?, NOW())
-    ");
-    $stmt->bind_param("is", $id_umkm, $hash1);
-    $stmt->execute();
-
-    /* BLOCKCHAIN: SURAT TERBIT */
-    $hash2 = hash('sha256', $id_umkm.'surat_terbit'.time());
+    /* BLOCKCHAIN */
+    $hash = hash('sha256', $id_umkm.'surat_terbit'.microtime(true));
     $stmt = $conn->prepare("
       INSERT INTO tbl_transaksi_blockchain
       (id_umkm, tipe_transaksi, hash_tx, tanggal_tx)
       VALUES (?, 'surat_pengantar_terbit', ?, NOW())
     ");
-    $stmt->bind_param("is", $id_umkm, $hash2);
+    $stmt->bind_param("is", $id_umkm, $hash);
     $stmt->execute();
 
     $_SESSION['alert'] = 'rw_setujui_ok';
     header("Location: generate_surat_umkm.php?id=".$id_umkm);
     exit;
 }
+
 
 /* ================= TOLAK RW ================= */
 if ($aksi === 'tolak') {

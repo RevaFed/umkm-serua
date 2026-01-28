@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 22, 2026 at 04:41 PM
+-- Generation Time: Jan 28, 2026 at 03:06 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -32,18 +32,24 @@ CREATE TABLE `tbl_admin` (
   `nama` varchar(150) NOT NULL,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `role` enum('rt','rw','admin') NOT NULL,
+  `rt` varchar(10) DEFAULT NULL,
+  `rw` varchar(10) DEFAULT NULL,
   `jabatan` varchar(100) DEFAULT NULL,
   `no_hp` varchar(20) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `ttd` varchar(100) DEFAULT NULL,
+  `stempel` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `tbl_admin`
 --
 
-INSERT INTO `tbl_admin` (`id_admin`, `nama`, `username`, `password`, `jabatan`, `no_hp`, `created_at`) VALUES
-(1, 'admin', 'admin', '$2y$10$W8lmgQ4fYuHFctG9uGEv4OS4UPMfNT08dm5wq226c1SLYAk.lcYB2', 'admin', '12345678', '2026-01-22 12:56:32'),
-(6, 'adidut', 'adjie', '$2y$10$N..3wFKuU0LLr84TyGrBQOXL5uEl59kSDLFOUd1.huR0QFulowbiK', 'admin', '123', '2026-01-22 15:22:01');
+INSERT INTO `tbl_admin` (`id_admin`, `nama`, `username`, `password`, `role`, `rt`, `rw`, `jabatan`, `no_hp`, `created_at`, `ttd`, `stempel`) VALUES
+(1, 'admin', 'admin', '$2y$10$W8lmgQ4fYuHFctG9uGEv4OS4UPMfNT08dm5wq226c1SLYAk.lcYB2', 'admin', NULL, NULL, 'admin', '12345678', '2026-01-22 12:56:32', NULL, NULL),
+(8, 'Asep Kusnadi Ginanjar', 'asep', '$2y$10$ZHeDszhpIJnX0DfNaKtKG.7hkIft7/v21QNCdOST9ViqHqw53fNQS', 'rt', '01', '02', 'RT', '123456789', '2026-01-23 12:54:07', 'ttd_rt_01_02.png', 'stempel_rt_01_02.png'),
+(9, 'Adjie Masaid Utomo', 'adjie', '$2y$10$FFhMFmmm4iabhBEBy2PB8OqVn9eFEGTF.glL9VXLyix9WiBbMXWky', 'rw', NULL, '02', 'RW', '123456789', '2026-01-23 12:54:28', 'ttd_rw_02.png', 'stempel_rw_02.png');
 
 -- --------------------------------------------------------
 
@@ -64,18 +70,7 @@ CREATE TABLE `tbl_dokumen_umkm` (
 --
 
 INSERT INTO `tbl_dokumen_umkm` (`id_dokumen`, `id_umkm`, `jenis_dokumen`, `file_path`, `created_at`) VALUES
-(19, 4, 'Foto KTP', 'dok_697231785432a.png', '2026-01-22 14:17:28'),
-(20, 4, 'Foto KK', 'dok_6972317854ef9.png', '2026-01-22 14:17:28'),
-(21, 4, 'Sertifikat Halal', 'dok_697231785588b.png', '2026-01-22 14:17:28'),
-(22, 4, 'Foto Menu Jualan', 'dok_697231785618d.png', '2026-01-22 14:17:28'),
-(23, 4, 'Foto Tempat Usaha', 'dok_6972317856a03.png', '2026-01-22 14:17:28'),
-(24, 4, 'Foto Pemilik & Usaha', 'dok_69723178573ae.png', '2026-01-22 14:17:28'),
-(25, 5, 'Foto KTP', 'dok_6972361a20007.png', '2026-01-22 14:37:14'),
-(26, 5, 'Foto KK', 'dok_6972361a2090a.png', '2026-01-22 14:37:14'),
-(27, 5, 'Sertifikat Halal', 'dok_6972361a212c3.png', '2026-01-22 14:37:14'),
-(28, 5, 'Foto Menu Jualan', 'dok_6972361a21bb5.png', '2026-01-22 14:37:14'),
-(29, 5, 'Foto Tempat Usaha', 'dok_6972361a2245a.png', '2026-01-22 14:37:14'),
-(30, 5, 'Foto Pemilik & Usaha', 'dok_6972361a22f8e.png', '2026-01-22 14:37:14');
+(71, 16, 'Foto KTP', 'dok_697a258f5006e.png', '2026-01-28 15:04:47');
 
 -- --------------------------------------------------------
 
@@ -99,10 +94,7 @@ CREATE TABLE `tbl_legalisasi` (
 --
 
 INSERT INTO `tbl_legalisasi` (`id_legalisasi`, `id_umkm`, `id_admin`, `nomor_surat`, `file_surat`, `tanggal_terbit`, `blockchain_tx`, `created_at`) VALUES
-(1, 4, 1, '470/UMKM/20121', NULL, '2026-01-22', 'cde162f9e0f17b21b412c4e9cdbb27a2c4b0563ea12f35ca6d0822b021d7c288', '2026-01-22 14:46:06'),
-(2, 4, 1, '470/UMKM/20121', NULL, '2026-01-22', '6bc0da0c4cf8129f1a93f512aa34d50e99d671ee944c690197cee496d6cbb39d', '2026-01-22 14:46:29'),
-(3, 5, 1, '600/UMKM /2025', 'SURAT_UMKM_5.pdf', '2026-01-22', 'a8b0becf1a57f3831823183d59be3d53e4daa78165b9a1127e7046c1b8ed403c', '2026-01-22 16:20:04'),
-(4, 5, 1, '600/UMKM /2025', 'SURAT_UMKM_5.pdf', '2026-01-22', '87091c78087675cba1865b0db39204d2c7ec78a4f6a0d9c3a510f63e47c0f4ff', '2026-01-22 16:22:43');
+(15, 16, 9, 'SK/UMKM/001/2026', 'surat_umkm_16.pdf', '2026-01-28', NULL, '2026-01-28 15:05:34');
 
 -- --------------------------------------------------------
 
@@ -113,7 +105,7 @@ INSERT INTO `tbl_legalisasi` (`id_legalisasi`, `id_umkm`, `id_admin`, `nomor_sur
 CREATE TABLE `tbl_transaksi_blockchain` (
   `id_tx` int NOT NULL,
   `id_umkm` int NOT NULL,
-  `tipe_transaksi` enum('pengajuan','verifikasi_rt_rw','surat_pengantar_terbit') NOT NULL,
+  `tipe_transaksi` enum('pengajuan','verifikasi_rt','verifikasi_rw','surat_pengantar_terbit','pengajuan_ulang') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `hash_tx` varchar(255) DEFAULT NULL,
   `tanggal_tx` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -123,19 +115,9 @@ CREATE TABLE `tbl_transaksi_blockchain` (
 --
 
 INSERT INTO `tbl_transaksi_blockchain` (`id_tx`, `id_umkm`, `tipe_transaksi`, `hash_tx`, `tanggal_tx`) VALUES
-(4, 4, 'pengajuan', 'a64e8f450036dcdbbb6c34d9e7426bb3f0e8b0a1de1a73af5f85f62b34c7d116', '2026-01-22 21:17:28'),
-(5, 5, 'pengajuan', '65a7ff905d3518479eb186ed868587ac860e1853be3db971cb98575607fd3d29', '2026-01-22 21:37:14'),
-(6, 4, 'verifikasi_rt_rw', 'c462b5b4627f5af3275f3e73417c1efeee627f190f7ce531442b6998f6abcd10', '2026-01-22 21:41:20'),
-(7, 4, 'verifikasi_rt_rw', 'b0f8bf19b48a3604e7c8fa356879f483de560acd9bac6b7837f80971a1f03028', '2026-01-22 21:43:38'),
-(8, 4, 'verifikasi_rt_rw', '656d8840fec27e97a2de1d69a503eb93a8eaea5c231d781e4f356c7d8f5861aa', '2026-01-22 21:44:05'),
-(9, 4, 'verifikasi_rt_rw', '61150fdb3e8d94854af75dbbde8055562a385d883c5b753f9ceb96fc45e88af0', '2026-01-22 21:44:31'),
-(10, 4, 'verifikasi_rt_rw', '58ec03d53779d3d125e017dccb2e05b178a51754958ae3aae2f02c92f2459e65', '2026-01-22 21:44:42'),
-(11, 4, 'verifikasi_rt_rw', '741616e180594ce67ca1d125bc106ef7b72e66ce0a33a03202259d4a33d61c78', '2026-01-22 21:45:08'),
-(12, 4, 'verifikasi_rt_rw', '1b075b05d95ef980bbff3b1c8a12d15cdb40b40427856f1b4e7e41b6ca68d711', '2026-01-22 21:45:40'),
-(13, 4, 'surat_pengantar_terbit', 'cde162f9e0f17b21b412c4e9cdbb27a2c4b0563ea12f35ca6d0822b021d7c288', '2026-01-22 21:46:06'),
-(14, 4, 'surat_pengantar_terbit', '6bc0da0c4cf8129f1a93f512aa34d50e99d671ee944c690197cee496d6cbb39d', '2026-01-22 21:46:29'),
-(15, 5, 'verifikasi_rt_rw', '4e8d64282f032b3c4743e87f59927156f67ad2488f1816a927bb67c2caf7fce0', '2026-01-22 23:18:57'),
-(16, 5, 'surat_pengantar_terbit', '87091c78087675cba1865b0db39204d2c7ec78a4f6a0d9c3a510f63e47c0f4ff', '2026-01-22 23:22:43');
+(59, 16, 'pengajuan', 'd587c1810fe4763ea881a31fbcfadb740afe1f652c937505fc913dd35aa02bf9', '2026-01-28 22:04:47'),
+(60, 16, 'verifikasi_rt', 'ef6540b9f1c673d14423941d0e9df72611ed37bc48075eb468d8f39f3b2fcd98', '2026-01-28 22:05:02'),
+(61, 16, 'surat_pengantar_terbit', '4306fd91ccd120b4678459898a7c5ebde5cdfc64219c7c99ade29bcc678dcffa', '2026-01-28 22:05:34');
 
 -- --------------------------------------------------------
 
@@ -152,16 +134,20 @@ CREATE TABLE `tbl_umkm` (
   `jumlah_karyawan` int DEFAULT NULL,
   `tanggal_pengajuan` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `status` enum('diajukan','verifikasi','disetujui','ditolak') DEFAULT 'diajukan'
+  `status` enum('menunggu_rt','ditolak_rt','menunggu_rw','ditolak_rw','disetujui','pengajuan_ulang') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'menunggu_rt',
+  `approved_rt_by` int DEFAULT NULL,
+  `approved_rt_at` datetime DEFAULT NULL,
+  `approved_rw_by` int DEFAULT NULL,
+  `approved_rw_at` datetime DEFAULT NULL,
+  `catatan_penolakan` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `tbl_umkm`
 --
 
-INSERT INTO `tbl_umkm` (`id_umkm`, `id_warga`, `nama_usaha`, `jenis_usaha`, `tahun_mulai`, `jumlah_karyawan`, `tanggal_pengajuan`, `created_at`, `status`) VALUES
-(4, 5, 'PT MAJU MUNDUR ENAK', 'Kuliner', '2025', 1, '2026-01-22', '2026-01-22 14:17:28', 'diajukan'),
-(5, 5, 'PT GAJAH DUDUK', 'Perdagangan', '2012', 100, '2026-01-22', '2026-01-22 14:37:14', 'diajukan');
+INSERT INTO `tbl_umkm` (`id_umkm`, `id_warga`, `nama_usaha`, `jenis_usaha`, `tahun_mulai`, `jumlah_karyawan`, `tanggal_pengajuan`, `created_at`, `status`, `approved_rt_by`, `approved_rt_at`, `approved_rw_by`, `approved_rw_at`, `catatan_penolakan`) VALUES
+(16, 6, 'PT MENCARI CINTA MESRA (MCM)', 'Jasa', '2019', 1000, '2026-01-28', '2026-01-28 15:04:47', 'disetujui', 8, '2026-01-28 22:05:02', 9, '2026-01-28 22:05:34', NULL);
 
 -- --------------------------------------------------------
 
@@ -175,6 +161,8 @@ CREATE TABLE `tbl_warga` (
   `nik` char(16) NOT NULL,
   `tanggal_lahir` date DEFAULT NULL,
   `alamat` text,
+  `rt` varchar(5) DEFAULT '01',
+  `rw` varchar(5) DEFAULT '02',
   `agama` varchar(30) DEFAULT NULL,
   `status_perkawinan` varchar(30) DEFAULT NULL,
   `no_hp` varchar(20) DEFAULT NULL,
@@ -188,12 +176,8 @@ CREATE TABLE `tbl_warga` (
 -- Dumping data for table `tbl_warga`
 --
 
-INSERT INTO `tbl_warga` (`id_warga`, `nama_lengkap`, `nik`, `tanggal_lahir`, `alamat`, `agama`, `status_perkawinan`, `no_hp`, `email`, `username`, `password`, `created_at`) VALUES
-(1, 'Adidut', '3172040808980001', '2026-01-21', 'Jl.Ciputat', 'Kristen', 'Belum Kawin', '0857756994299', 'genix369@gmail.com', 'dut', '$2y$10$ZXmXGURv1sLKFjYZhTNwA.QWXoHO3t6yNJtZ2pxvpgfLIbY5XXZim', '2026-01-21 16:30:04'),
-(2, 'tyas', '1313128716', '2026-01-21', 'xiu bsd', 'Islam', 'Belum Kawin', '187318', 'genix369@gmail.com', '123', '$2y$10$54Ukq8XFHYM95Clg9iap1ucSetRago8oY7C5xZBqYmntXAkttik02', '2026-01-21 16:30:48'),
-(3, 'uvuyv', '37656764564', '2026-01-22', 'dkvnm', 'Katolik', 'Belum Kawin', '08674665', 'genix369@gmail.com', 'a', '$2y$10$9C0j9xG7G4AxZ5u8GAqFJuNmxhJwHT//nMWI9T.6o0pW3PAoPW4J.', '2026-01-21 17:20:10'),
-(4, 'kjb', '44543423', '2026-01-15', 'tybnklmlkh', 'Kristen', 'Belum Kawin', '098786765', 'genix369@gmail.com', 'knkj', '$2y$10$VeNSVQgQxd5426cpKesXk.tpUTmJj7xN.6OXLmGwcAplt20LjCsmG', '2026-01-21 17:23:03'),
-(5, 'ajiboy', '1234566789', '2026-01-22', 'Mampang', 'Islam', 'Belum Kawin', '088098980', 'genix369@gmail.com', 'user01', '$2y$10$On/4Nnha8mUcWyOeQlvIveBUGJv9IyNCCtFlVAepln0he/HOgWSQu', '2026-01-22 12:00:31');
+INSERT INTO `tbl_warga` (`id_warga`, `nama_lengkap`, `nik`, `tanggal_lahir`, `alamat`, `rt`, `rw`, `agama`, `status_perkawinan`, `no_hp`, `email`, `username`, `password`, `created_at`) VALUES
+(6, 'Topik', '1234567890', '2026-01-23', 'Roxy Tercinta', '01', '02', 'Kristen', 'Belum Kawin', '123456789', 'topik.mencaricinta@gmail.com', 'topik', '$2y$10$X2v3O2UMIFbAaza24z0K/.ZUIK.21Zi7aRWBv9phFU754grUYo6YW', '2026-01-23 13:09:41');
 
 --
 -- Indexes for dumped tables
@@ -218,7 +202,7 @@ ALTER TABLE `tbl_dokumen_umkm`
 --
 ALTER TABLE `tbl_legalisasi`
   ADD PRIMARY KEY (`id_legalisasi`),
-  ADD KEY `fk_legalisasi_umkm` (`id_umkm`),
+  ADD UNIQUE KEY `id_umkm` (`id_umkm`),
   ADD KEY `fk_legalisasi_admin` (`id_admin`);
 
 --
@@ -233,7 +217,9 @@ ALTER TABLE `tbl_transaksi_blockchain`
 --
 ALTER TABLE `tbl_umkm`
   ADD PRIMARY KEY (`id_umkm`),
-  ADD KEY `fk_umkm_warga` (`id_warga`);
+  ADD KEY `fk_umkm_warga` (`id_warga`),
+  ADD KEY `fk_umkm_rt` (`approved_rt_by`),
+  ADD KEY `fk_umkm_rw` (`approved_rw_by`);
 
 --
 -- Indexes for table `tbl_warga`
@@ -251,37 +237,37 @@ ALTER TABLE `tbl_warga`
 -- AUTO_INCREMENT for table `tbl_admin`
 --
 ALTER TABLE `tbl_admin`
-  MODIFY `id_admin` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_admin` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `tbl_dokumen_umkm`
 --
 ALTER TABLE `tbl_dokumen_umkm`
-  MODIFY `id_dokumen` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id_dokumen` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT for table `tbl_legalisasi`
 --
 ALTER TABLE `tbl_legalisasi`
-  MODIFY `id_legalisasi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_legalisasi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `tbl_transaksi_blockchain`
 --
 ALTER TABLE `tbl_transaksi_blockchain`
-  MODIFY `id_tx` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id_tx` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT for table `tbl_umkm`
 --
 ALTER TABLE `tbl_umkm`
-  MODIFY `id_umkm` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_umkm` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `tbl_warga`
 --
 ALTER TABLE `tbl_warga`
-  MODIFY `id_warga` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_warga` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -310,6 +296,8 @@ ALTER TABLE `tbl_transaksi_blockchain`
 -- Constraints for table `tbl_umkm`
 --
 ALTER TABLE `tbl_umkm`
+  ADD CONSTRAINT `fk_umkm_rt` FOREIGN KEY (`approved_rt_by`) REFERENCES `tbl_admin` (`id_admin`),
+  ADD CONSTRAINT `fk_umkm_rw` FOREIGN KEY (`approved_rw_by`) REFERENCES `tbl_admin` (`id_admin`),
   ADD CONSTRAINT `fk_umkm_warga` FOREIGN KEY (`id_warga`) REFERENCES `tbl_warga` (`id_warga`) ON DELETE CASCADE;
 COMMIT;
 

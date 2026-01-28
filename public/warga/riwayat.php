@@ -12,15 +12,19 @@ $id_warga = $_SESSION['id_warga'];
 /* DATA RIWAYAT UMKM */
 $qRiwayat = mysqli_query($conn, "
   SELECT 
-    id_umkm,
-    nama_usaha,
-    jenis_usaha,
-    created_at,
-    status
-  FROM tbl_umkm
-  WHERE id_warga = '$id_warga'
-  ORDER BY created_at DESC
+    u.id_umkm,
+    u.nama_usaha,
+    u.jenis_usaha,
+    u.created_at,
+    u.status,
+    l.file_surat
+  FROM tbl_umkm u
+  LEFT JOIN tbl_legalisasi l 
+    ON u.id_umkm = l.id_umkm
+  WHERE u.id_warga = '$id_warga'
+  ORDER BY u.created_at DESC
 ");
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -120,13 +124,14 @@ while ($row = mysqli_fetch_assoc($qRiwayat)):
               <i class="fas fa-eye"></i> Detail
             </a>
 
-            <?php if ($row['status'] === 'disetujui'): ?>
-              <a href="../../uploads/surat/<?= $row['id_umkm'] ?>.pdf"
-                 target="_blank"
-                 class="btn btn-sm btn-success ms-1">
-                <i class="fas fa-file-pdf"></i> Surat
-              </a>
-            <?php endif; ?>
+<?php if ($row['status'] === 'disetujui' && !empty($row['file_surat'])): ?>
+  <a href="../../uploads/surat/<?= htmlspecialchars($row['file_surat']) ?>"
+     target="_blank"
+     class="btn btn-sm btn-success ms-1">
+    <i class="fas fa-file-pdf"></i> Surat
+  </a>
+<?php endif; ?>
+
           </td>
         </tr>
 <?php endwhile; ?>
